@@ -1,0 +1,64 @@
+[
+    {
+        "metadata": {
+            "nodes": {
+                "node1": {
+                    "url": "url1"
+                },
+                "node2": {
+                    "url": "url2"
+                },
+                "node3": {
+                    "url": "hrl3"
+                }
+            },
+            "edfs": {
+                "root": {
+                    "user": {
+                        "Judd": {
+                            "players.json": {
+                                "blocks": [
+                                    "block1",
+                                    "block2",
+                                    "block3"
+                                ],
+                                "block_location": {
+                                    "block1": [
+                                        "node1",
+                                        "node3"
+                                    ],
+                                    "block2": [
+                                        "node2",
+                                        "node3"
+                                    ],
+                                    "block3": [
+                                        "node1",
+                                        "node3"
+                                    ]
+                                }
+                            },
+                            "rankings.json": {}
+                        }
+                    }
+                }
+            }
+        }
+    },
+    {
+        "node1": {
+            "id_file1_block1": "...",
+            "id_file3_block1": "..."
+        }
+    },
+    {
+        "node2": {
+
+        }
+    },
+    {
+        "node3": {
+
+        }
+    }
+]
+
