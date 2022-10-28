@@ -5,7 +5,14 @@ import json
 
 FIREBASE_URL = "https://snookerdatamanager-default-rtdb.firebaseio.com/"
 METADATA_NODE_URL = FIREBASE_URL + "metadata"
+METADATA_ROOT_URL = METADATA_NODE_URL + "/edfs/root"
 NUM_NODES = 3
+
+def error(error_code):
+    """give error message"""
+    if error_code == 404:
+        return "404: Path does not exist!"
+    #TODO
 
 def init_database():
     metadata = {}
@@ -87,6 +94,15 @@ def check_file_exists(path):
             return False
     return True
 
+def check_path_exists(path):
+    """
+    check if a path exists in metadata
+    """
+    dir_metadata = requests.get(f'{METADATA_ROOT_URL}/{path}.json')
+    if dir_metadata.status_code == 200:
+        return True
+    else:
+        return False
 
 def update_meta_data(file, path, num_partitions):
     # for each file partition number, use get_partition_node_number to get the corresponding node
@@ -139,12 +155,6 @@ def update_meta_data(file, path, num_partitions):
 
 def get_id(filename, block):
     return "id_" + filename + "_" + block
-
-def error(error_code):
-    """give error message"""
-    if error_code == 404:
-        return "404: Path does not exist!"
-    #TODO
 
 def get_node_data(node_address):
     return json.loads(requests.get(node_address).text)
@@ -223,7 +233,7 @@ def cat(path):
 
 def rm(path):
     print("rm " + path)
-    if check_path_exists(path):
+    if check_file_exists(path):
         # get block locations in nodes
         # get file name
         # go to the nodes, use the id to delete the file blocks
@@ -245,7 +255,7 @@ def put(file, path, num_partitions):
 
 def get_partition_locations(path):
     print("get_partition_locations " + path)
-    if check_path_exists(path):
+    if check_file_exists(path):
         # return the block_locations in the xxx.json file
         pass
     else:
@@ -255,7 +265,7 @@ def get_partition_locations(path):
 
 def read_partition(path, partitionNum):
     print("read_partition" + path + " " + partitionNum)
-    if check_path_exists(path):
+    if check_file_exists(path):
         # use index to get block's name in blocks, then use block_locations to
         # get the nodes storing the block.
         # then go to the node and read the data
