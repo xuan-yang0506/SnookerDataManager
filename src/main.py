@@ -12,7 +12,18 @@ NUM_NODES = 3
 
 
 def init_database():
-    print("init_database")
+    metadata = {}
+    metadata['nodes'] = {}
+    for i in range(0, NUM_NODES):
+        node = "node" + str(i + 1)
+        node_url = FIREBASE_URL + node + ".json"
+        metadata['nodes'][node] = {}
+        metadata['nodes'][node]['url'] = node_url
+
+    # TODO: initialize file system
+
+    metadata_json_file = json.dumps(metadata, indent=4)
+    response = requests.put(METADATA_NODE_URL, metadata_json_file)
 
 
 # returns as follows:
