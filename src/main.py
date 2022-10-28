@@ -20,7 +20,6 @@ def init_database():
     metadata['edfs']['root'] = ""
 
     metadata_json_file = json.dumps(metadata, indent=4)
-    response = requests.put(METADATA_NODE_URL, metadata_json_file)
 
 
 # returns as follows:
@@ -44,10 +43,27 @@ def get_partition_node_number(file_partition_num, file_name):
     pass
 
 
+def split_path(path):
+    split = path.split('/')
+    return split
+
 
 def check_file_exists(path):
-    # check if this file already exists
+    metadata = requests.get(METADATA_NODE_URL).text
+    split = split_path(path)
+
+    metadata = json.loads(requests.get(METADATA_NODE_URL).text)
+    root = metadata['edfs']['root']
+    current_dir = root
+
+    for name in split:
+        if name != "":
+            if name in current_dir.keys():
+                current_dir = current_dir[name]
+            else:
+                return False
     return True
+
 
 def update_meta_data(file, path, num_partitions):
     # for each file partition number, use get_partition_node_number to get the corresponding node
