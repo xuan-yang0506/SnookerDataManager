@@ -34,6 +34,10 @@ def get_node_address(node_name):
     return FIREBASE_URL + node_name + ".json"
 
 
+def get_hash(str):
+    return hashlib.sha256(bytes(str, encoding='utf-8')).hexdigest()
+
+
 # returns as follows:
 # {"block1": "first part of file",
 #  "block2": "second part of file",
@@ -107,7 +111,7 @@ def update_meta_data(file, path, num_partitions):
     #         "node1",
     #         "node3"
     #     ] }
-    filename_hash = hashlib.sha256(bytes(file, encoding='utf-8')).hexdigest()
+    filename_hash = get_hash(file)
     split = split_path(path)
     metadata = json.loads(requests.get(METADATA_NODE_URL).text)
     root = metadata['edfs']['root']
@@ -141,7 +145,7 @@ def update_meta_data(file, path, num_partitions):
 
 
 def get_id(filename, block):
-    return "id_" + filename + "_" + block
+    return "id_" + get_hash(filename) + "_" + block
 
 
 def get_node_data(node_address):
@@ -202,10 +206,14 @@ def put(file, path, num_partitions):
 
 
 def get_partition_locations(path):
+    print(get_partition_locations_helper(path))
+
+
+def get_partition_locations_helper(path):
     # if check_file_exists(path):
     split = split_path(path)
 
-    split[len(split) - 1] = hashlib.sha256(b'test.txt').hexdigest()
+    split[len(split) - 1] = get_hash(split[len(split) - 1])
 
     metadata = json.loads(requests.get(METADATA_NODE_URL).text)
     root = metadata['edfs']['root']
@@ -214,7 +222,7 @@ def get_partition_locations(path):
     for name in split:
         current_dir = current_dir[name]
 
-    print(current_dir['block_locations'])
+    return current_dir['block_locations']
 
     # else:
     #     # give error
@@ -222,12 +230,21 @@ def get_partition_locations(path):
 
 
 def read_partition(path, partitionNum):
-    print("read_partition" + path + " " + partitionNum)
     # if check_file_exists(path):
         # use index to get block's name in blocks, then use block_locations to
         # get the nodes storing the block.
         # then go to the node and read the data
         # pass
+
+    split = split_path(path)
+    block_name = "block" + str(partitionNum)
+    partition_locations = get_partition_locations_helper(path)
+    partition_location = partition_locations[block_name]
+    id = get_id(split[len(split) - 1], "block" + str(partitionNum))
+
+    node_data = get_node_data(get_node_address(partition_location[0]))
+    print(node_data[id])
+
     # else:
     #     # give error
     #     pass
