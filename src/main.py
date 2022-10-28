@@ -4,7 +4,7 @@ import requests
 import json
 
 FIREBASE_URL = "https://snookerdatamanager-default-rtdb.firebaseio.com/"
-METADATA_NODE_URL = FIREBASE_URL + "metadata.json"
+METADATA_NODE_URL = FIREBASE_URL + "metadata"
 NUM_NODES = 3
 
 def init_database():
@@ -20,7 +20,7 @@ def init_database():
     metadata['edfs']['root'] = ""
 
     metadata_json_file = json.dumps(metadata, indent=4)
-    response = requests.put(METADATA_NODE_URL, metadata_json_file)
+    response = requests.put(METADATA_NODE_URL + '.json', metadata_json_file)
 
 
 # returns as follows:
@@ -45,9 +45,10 @@ def get_partition_node_number(file_partition_num, file_name):
 
 
 
-def check_file_exists(path):
-    # check if this file already exists
-    return True
+def check_path_exists(path):
+    # check if this path already exists
+    response = requests.get(f'{METADATA_NODE_URL}/{path}.json')
+    return True if response.status_code == 200 else False
 
 def update_meta_data(file, path, num_partitions):
     # for each file partition number, use get_partition_node_number to get the corresponding node
@@ -74,25 +75,67 @@ def update_meta_data(file, path, num_partitions):
 def write_to_block(file_partitions, block_locations):
     pass
 
-
-
+def error(error_code):
+    """give error message"""
+    if error_code == 404:
+        return "404: Path does not exist!"
+    #TODO
 
 
 def mkdir(path):
+    """
+    create a directory in metedata
+    """
     print("mkdir " + path)
+    # get the path of json file
+    dir_path, new_dir = path.rsplit("/", 1)
+    dir_metadata = requests.get(f'{METADATA_NODE_URL}/{dir_path}.json')
+    
+    if check_path_exists(dir_path):
+        dir_metadata = requests.get(f'{METADATA_NODE_URL}/{dir_path}.json').json()
+        if new_dir in dir_metadata:
+            print("Directory already exists!")
+        else:
+            dir_metadata[new_dir] = {}
+            requests.put(f'{METADATA_NODE_URL}/{dir_path}.json', json.dumps(dir_metadata))
+    else:
+        print(error(404))
 
 
 def ls(path):
+    """
+    List all directories and files under the given path
+    """
     print("ls " + path)
+    dir_metadata = requests.get(f'{METADATA_NODE_URL}/{path}.json')
+    if dir_metadata.status_code == 200:
+        dir_metadata = dir_metadata.json()
+        for key in dir_metadata:
+            print(key)
+    else:
+        print(error(404))
+
 
 
 def cat(path):
     print("cat " + path)
+    if check_path_exists(path):
+        # get block locations in nodes
+        # for each block, read the data from the nodes
+        file_metadata = requests.get(f'{METADATA_NODE_URL}/{path}.json').json()
+        for block in file_metadata['blocks']:
+            nodes = file_metadata['block_locations'][block]
+            for node in nodes:
+                node_url = METADATA_NODE_URL['nodes'][node]['url']
+                # read the data from the node
+                pass
+    else:
+        print(error(404))
 
 
 def rm(path):
     print("rm " + path)
-    if check_file_exists(path):
+    if check_path_exists(path):
         # get block locations in nodes
         # get file name
         # go to the nodes, use the id to delete the file blocks
@@ -105,7 +148,7 @@ def rm(path):
 
 def put(file, path, num_partitions):
     print("put " + file + " " + path + " " + num_partitions)
-    if check_file_exists(path):
+    if check_path_exists(path):
         # give error
         pass
     else:
@@ -116,7 +159,7 @@ def put(file, path, num_partitions):
 
 def get_partition_locations(path):
     print("get_partition_locations " + path)
-    if check_file_exists(path):
+    if check_path_exists(path):
         # return the block_locations in the xxx.json file
         pass
     else:
@@ -126,7 +169,7 @@ def get_partition_locations(path):
 
 def read_partition(path, partitionNum):
     print("read_partition" + path + " " + partitionNum)
-    if check_file_exists(path):
+    if check_path_exists(path):
         # use index to get block's name in blocks, then use block_locations to
         # get the nodes storing the block.
         # then go to the node and read the data
