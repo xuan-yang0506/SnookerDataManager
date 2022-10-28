@@ -17,7 +17,7 @@ def init_database():
         metadata['nodes'][node]['url'] = node_url
 
     metadata['edfs'] = {}
-    metadata['edfs']['root'] = 0
+    metadata['edfs']['root'] = ""
 
     metadata_json_file = json.dumps(metadata, indent=4)
     response = requests.put(METADATA_NODE_URL, metadata_json_file)
