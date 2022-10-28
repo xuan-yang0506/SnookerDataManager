@@ -69,7 +69,13 @@ def cat():
 
 
 def rm(path):
-
+    if check_file_exists(path):
+        # get block locations in nodes
+        # get file name
+        # go to the nodes, use the id to delete the file blocks
+        # delete the xxx.json in this path
+    else:
+        # give error
 
 def put(file, path, num_partitions):
     if check_file_exists(path):
@@ -80,15 +86,20 @@ def put(file, path, num_partitions):
         write_to_block(file_partitions, block_locations)
 
 
+def get_partition_locations(path):
+    if check_file_exists(path):
+        # return the block_locations in the xxx.json file
+    else:
+        # give error
 
 
-
-
-def get_partition_locations(file):
-
-
-def read_partition(file, partitionNum):
-
+def read_partition(path, partitionNum):
+    if check_file_exists(path):
+        # use index to get block's name in blocks, then use block_locations to
+        # get the nodes storing the block.
+        # then go to the node and read the data
+    else:
+        # give error
 
 def main():
 
