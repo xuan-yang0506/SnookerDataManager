@@ -22,7 +22,7 @@
                                     "block2",
                                     "block3"
                                 ],
-                                "block_location": {
+                                "block_locations": {
                                     "block1": [
                                         "node1",
                                         "node3"
