@@ -1,5 +1,5 @@
 import sys
-
+import hashlib
 import requests
 import json
 
@@ -107,8 +107,8 @@ def update_meta_data(file, path, num_partitions):
     #         "node1",
     #         "node3"
     #     ] }
+    filename_hash = hashlib.sha256(bytes(file, encoding='utf-8')).hexdigest()
     split = split_path(path)
-    filename = split[len(split) - 1]
     metadata = json.loads(requests.get(METADATA_NODE_URL).text)
     root = metadata['edfs']['root']
     if type(root) is not dict:
@@ -121,20 +121,23 @@ def update_meta_data(file, path, num_partitions):
         if name not in current_dir.keys():
             current_dir[name] = {}
             current_dir = current_dir[name]
+    current_dir[filename_hash] = {}
+    current_dir = current_dir[filename_hash]
+    current_dir['filename'] = file
     current_dir['blocks'] = []
     current_dir['block_locations'] = {}
     for i in range(0, num_partitions):
         block_name = "block" + str(i + 1)
         current_dir['blocks'].append(block_name)
-        block_location1 = assign_block_to_node(i, filename)
-        block_location2 = (assign_block_to_node(i, filename) + 1) % NUM_NODES
+        block_location1 = assign_block_to_node(i, file)
+        block_location2 = (assign_block_to_node(i, file) + 1) % NUM_NODES
         current_dir['block_locations'][block_name] = []
         current_dir['block_locations'][block_name].append("node" + str(block_location1 + 1))
         current_dir['block_locations'][block_name].append("node" + str(block_location2 + 1))
 
     metadata_json_file = json.dumps(metadata, indent=4)
     response = requests.put(METADATA_NODE_URL, metadata_json_file)
-    return filename, current_dir['block_locations']
+    return current_dir['block_locations']
 
 
 def get_id(filename, block):
@@ -157,7 +160,6 @@ def write_to_block(filename, file_partitions, block_locations):
             node_address = get_node_address(node)
             block_id = get_id(filename, block)
             nodedata = get_node_data(node_address)
-            print(nodedata)
             if type(nodedata) is not dict:
                 nodedata = {}
             nodedata[block_id] = file_partitions[block]
@@ -191,34 +193,45 @@ def rm(path):
 
 
 def put(file, path, num_partitions):
-    if check_file_exists(path):
-        print("File already exists!")
-    else:
-        file_partitions = partition_file(file, num_partitions)
-        filename, block_locations = update_meta_data(file, path, num_partitions)
-        write_to_block(filename, file_partitions, block_locations)
+    # if check_file_exists(path):
+    #     print("File already exists!")
+    # else:
+    file_partitions = partition_file(file, num_partitions)
+    block_locations = update_meta_data(file, path, num_partitions)
+    write_to_block(file, file_partitions, block_locations)
 
 
 def get_partition_locations(path):
-    print("get_partition_locations " + path)
-    if check_file_exists(path):
-        # return the block_locations in the xxx.json file
-        pass
-    else:
-        # give error
-        pass
+    # if check_file_exists(path):
+    split = split_path(path)
+
+    split[len(split) - 1] = hashlib.sha256(b'test.txt').hexdigest()
+
+    metadata = json.loads(requests.get(METADATA_NODE_URL).text)
+    root = metadata['edfs']['root']
+    current_dir = root
+
+    for name in split:
+        current_dir = current_dir[name]
+
+    print(current_dir['block_locations'])
+
+    # else:
+    #     # give error
+    #     pass
 
 
 def read_partition(path, partitionNum):
     print("read_partition" + path + " " + partitionNum)
-    if check_file_exists(path):
+    # if check_file_exists(path):
         # use index to get block's name in blocks, then use block_locations to
         # get the nodes storing the block.
         # then go to the node and read the data
-        pass
-    else:
-        # give error
-        pass
+        # pass
+    # else:
+    #     # give error
+    #     pass
+
 
 def usage():
     print("Usage: ")
