@@ -184,16 +184,52 @@ def cat(path):
 
 
 def rm(path):
-    print("rm " + path)
-    if check_file_exists(path):
+    # if check_file_exists(path):
         # get block locations in nodes
         # get file name
         # go to the nodes, use the id to delete the file blocks
         # delete the xxx.json in this path
-        pass
-    else:
+        # pass
+    split = split_path(path)
+    filename = split[len(split) - 1]
+    split = split[:-1]
+    filename_hash = get_hash(filename)
+
+    partition_locations = get_partition_locations_helper(path)
+    for block in partition_locations.keys():
+        block_id = get_id(filename, block)
+        for node in partition_locations[block]:
+            node_address = get_node_address(node)
+            nodedata = get_node_data(node_address)
+            nodedata[block_id] = {}
+            write_to_node(node_address, nodedata)
+
+    metadata = json.loads(requests.get(METADATA_NODE_URL).text)
+    root = metadata['edfs']['root']
+    prev_dir = root
+
+    for i in range(0, len(split) - 1):
+        name = split[i]
+        prev_dir = prev_dir[name]
+    current_dir = prev_dir[split[len(split) - 1]]
+
+    current_dir[filename_hash] = {}
+
+
+    current_dir_empty = True
+    for key in current_dir:
+        if current_dir[key] != {}:
+            current_dir_empty = False
+
+    if current_dir_empty:
+        prev_dir[split[len(split) - 1]] = ""
+
+    metadata_json_file = json.dumps(metadata, indent=4)
+    response = requests.put(METADATA_NODE_URL, metadata_json_file)
+
+    # else:
         # give error
-        pass
+        # pass
 
 
 def put(file, path, num_partitions):
