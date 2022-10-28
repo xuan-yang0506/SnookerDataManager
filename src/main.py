@@ -5,11 +5,7 @@ import json
 
 FIREBASE_URL = "https://snookerdatamanager-default-rtdb.firebaseio.com/"
 METADATA_NODE_URL = FIREBASE_URL + "metadata.json"
-NODE1_URL = FIREBASE_URL + "node1.json"
-NODE2_URL = FIREBASE_URL + "node2.json"
-NODE3_URL = FIREBASE_URL + "node3.json"
 NUM_NODES = 3
-
 
 def init_database():
     metadata = {}
@@ -20,7 +16,8 @@ def init_database():
         metadata['nodes'][node] = {}
         metadata['nodes'][node]['url'] = node_url
 
-    # TODO: initialize file system
+    metadata['edfs'] = {}
+    metadata['edfs']['root'] = 0
 
     metadata_json_file = json.dumps(metadata, indent=4)
     response = requests.put(METADATA_NODE_URL, metadata_json_file)
