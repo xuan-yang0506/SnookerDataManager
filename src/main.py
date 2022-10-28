@@ -27,7 +27,19 @@ def init_database():
 #  "block2": "second part of file",
 #  "block3": "third part of file"}
 def partition_file(file, num_pieces):
-    pass
+    # f = open(file)
+    # content = f.read()
+    content = "aabbccddeeffgg"
+    num_characters = len(content)
+    piece_length = num_characters // num_pieces
+    output = {}
+    i = 0
+    for i in range(0, num_pieces):
+        if i == num_pieces - 1:
+            output["block" + str(i + 1)] = content[i * piece_length:]
+        else:
+            output["block" + str(i + 1)] = content[i * piece_length: (i + 1) * piece_length]
+    return output
 
 
 def get_firebase_file(firebase_path):
@@ -122,8 +134,7 @@ def rm(path):
 def put(file, path, num_partitions):
     print("put " + file + " " + path + " " + num_partitions)
     if check_file_exists(path):
-        # give error
-        pass
+        print("File already exists!")
     else:
         file_partitions = partition_file(file, num_partitions)
         block_locations = update_meta_data(file, path, num_partitions)
