@@ -191,6 +191,8 @@ def mkdir(path):
     
     if check_path_exists(dir_path):
         dir_metadata = requests.get(f'{METADATA_ROOT_URL}{dir_path}.json').json()
+        if not isinstance(dir_metadata, dict):
+            dir_metadata = {}
         if new_dir in dir_metadata:
             print("Directory already exists!")
         else:
