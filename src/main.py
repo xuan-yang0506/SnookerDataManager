@@ -45,6 +45,10 @@ def get_node_address(node_name):
     return node_metadata[node_name]['url']
 
 
+def get_hash(str):
+    return hashlib.sha256(bytes(str, encoding='utf-8')).hexdigest()
+
+
 # returns as follows:
 # {"block1": "first part of file",
 #  "block2": "second part of file",
@@ -159,7 +163,7 @@ def update_meta_data(file, path, num_partitions):
 
 
 def get_id(filename, block):
-    return "id_" + filename + "_" + block
+    return "id_" + get_hash(filename) + "_" + block
 
 def get_node_data(node_address):
     return json.loads(requests.get(node_address).text)
@@ -250,16 +254,52 @@ def cat(path):
 
 
 def rm(path):
-    print("rm " + path)
-    if check_file_exists(path):
+    # if check_file_exists(path):
         # get block locations in nodes
         # get file name
         # go to the nodes, use the id to delete the file blocks
         # delete the xxx.json in this path
-        pass
-    else:
+        # pass
+    split = split_path(path)
+    filename = split[len(split) - 1]
+    split = split[:-1]
+    filename_hash = get_hash(filename)
+
+    partition_locations = get_partition_locations_helper(path)
+    for block in partition_locations.keys():
+        block_id = get_id(filename, block)
+        for node in partition_locations[block]:
+            node_address = get_node_address(node)
+            nodedata = get_node_data(node_address)
+            nodedata[block_id] = {}
+            write_to_node(node_address, nodedata)
+
+    metadata = json.loads(requests.get(METADATA_NODE_URL).text)
+    root = metadata['edfs']['root']
+    prev_dir = root
+
+    for i in range(0, len(split) - 1):
+        name = split[i]
+        prev_dir = prev_dir[name]
+    current_dir = prev_dir[split[len(split) - 1]]
+
+    current_dir[filename_hash] = {}
+
+
+    current_dir_empty = True
+    for key in current_dir:
+        if current_dir[key] != {}:
+            current_dir_empty = False
+
+    if current_dir_empty:
+        prev_dir[split[len(split) - 1]] = ""
+
+    metadata_json_file = json.dumps(metadata, indent=4)
+    response = requests.put(METADATA_NODE_URL, metadata_json_file)
+
+    # else:
         # give error
-        pass
+        # pass
 
 
 def put(file, path, num_partitions):
@@ -272,10 +312,14 @@ def put(file, path, num_partitions):
 
 
 def get_partition_locations(path):
+    print(get_partition_locations_helper(path))
+
+
+def get_partition_locations_helper(path):
     # if check_file_exists(path):
     split = split_path(path)
 
-    split[len(split) - 1] = hashlib.sha256(b'test.txt').hexdigest()
+    split[len(split) - 1] = get_hash(split[len(split) - 1])
 
     metadata = json.loads(requests.get(METADATA_NODE_URL).text)
     root = metadata['edfs']['root']
@@ -284,7 +328,7 @@ def get_partition_locations(path):
     for name in split:
         current_dir = current_dir[name]
 
-    print(current_dir['block_locations'])
+    return current_dir['block_locations']
 
     # else:
     #     # give error
@@ -292,12 +336,21 @@ def get_partition_locations(path):
 
 
 def read_partition(path, partitionNum):
-    print("read_partition" + path + " " + partitionNum)
     # if check_file_exists(path):
         # use index to get block's name in blocks, then use block_locations to
         # get the nodes storing the block.
         # then go to the node and read the data
         # pass
+
+    split = split_path(path)
+    block_name = "block" + str(partitionNum)
+    partition_locations = get_partition_locations_helper(path)
+    partition_location = partition_locations[block_name]
+    id = get_id(split[len(split) - 1], "block" + str(partitionNum))
+
+    node_data = get_node_data(get_node_address(partition_location[0]))
+    print(node_data[id])
+
     # else:
     #     # give error
     #     pass
