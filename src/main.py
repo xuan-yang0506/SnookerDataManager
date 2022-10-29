@@ -310,9 +310,11 @@ def put(file, path, num_partitions):
     # if check_file_exists(path):
     #     print("File already exists!")
     # else:
+    filename = split_path(file)
+    filename = filename[len(filename) - 1]
     file_partitions = partition_file(file, num_partitions)
-    block_locations = update_meta_data(file, path, num_partitions)
-    write_to_block(file, file_partitions, block_locations)
+    block_locations = update_meta_data(filename, path, num_partitions)
+    write_to_block(filename, file_partitions, block_locations)
 
 
 def get_partition_locations(path):
