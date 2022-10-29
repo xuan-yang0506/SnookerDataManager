@@ -170,7 +170,7 @@ def write_to_block(filename, file_partitions, block_locations):
     # block_locations: {'block1': ['node2', 'node0'], 'block2': ['node1', 'node2'], 'block3': ['node0', 'node1']}
     for block in file_partitions.keys():
         for node in block_locations[block]:
-            node_address = get_node_address(node)
+            node_address = get_node_address(node) + ".json"
             block_id = get_id(filename, block)
             nodedata = get_node_data(node_address)
             if type(nodedata) is not dict:
@@ -272,7 +272,7 @@ def rm(path):
     for block in partition_locations.keys():
         block_id = get_id(filename, block)
         for node in partition_locations[block]:
-            node_address = get_node_address(node)
+            node_address = get_node_address(node) + ".json"
             nodedata = get_node_data(node_address)
             nodedata[block_id] = {}
             write_to_node(node_address, nodedata)
@@ -324,7 +324,7 @@ def get_partition_locations_helper(path):
 
     split[len(split) - 1] = get_hash(split[len(split) - 1])
 
-    metadata = json.loads(requests.get(METADATA_NODE_URL).text)
+    metadata = json.loads(requests.get(METADATA_NODE_URL + ".json").text)
     root = metadata['edfs']['root']
     current_dir = root
 
@@ -351,7 +351,7 @@ def read_partition(path, partitionNum):
     partition_location = partition_locations[block_name]
     id = get_id(split[len(split) - 1], "block" + str(partitionNum))
 
-    node_data = get_node_data(get_node_address(partition_location[0]))
+    node_data = get_node_data(get_node_address(partition_location[0]) + ".json")
     print(node_data[id])
 
     # else:
