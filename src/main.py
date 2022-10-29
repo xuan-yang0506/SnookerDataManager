@@ -278,7 +278,7 @@ def rm(path):
             nodedata[block_id] = {}
             write_to_node(node_address, nodedata)
 
-    metadata = json.loads(requests.get(METADATA_NODE_URL).text)
+    metadata = json.loads(requests.get(METADATA_NODE_URL + ".json").text)
     root = metadata['edfs']['root']
     prev_dir = root
 
@@ -299,7 +299,7 @@ def rm(path):
         prev_dir[split[len(split) - 1]] = ""
 
     metadata_json_file = json.dumps(metadata, indent=4)
-    response = requests.put(METADATA_NODE_URL, metadata_json_file)
+    response = requests.put(METADATA_NODE_URL + ".json", metadata_json_file)
 
     # else:
         # give error
