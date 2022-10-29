@@ -208,8 +208,7 @@ def ls(path):
     """
     print("ls " + path)
     if check_path_exists(path):
-        dir_metadata = requests.get(f'{METADATA_ROOT_URL}{path}.json')
-        dir_metadata = dir_metadata.json()
+        dir_metadata = requests.get(f'{METADATA_ROOT_URL}{path}.json').json()
         for key in dir_metadata:
             # the case when the key is a file
             if 'filename' in dir_metadata[key]:
