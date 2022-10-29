@@ -188,7 +188,6 @@ def mkdir(path):
     # get the path of json file
     dir_path, new_dir = path.rsplit("/", 1)
     dir_metadata = requests.get(f'{METADATA_ROOT_URL}{dir_path}.json')
-    
     if check_path_exists(dir_path):
         dir_metadata = requests.get(f'{METADATA_ROOT_URL}{dir_path}.json').json()
         if not isinstance(dir_metadata, dict):
@@ -257,61 +256,56 @@ def cat(path):
 
 
 def rm(path):
-    # if check_file_exists(path):
-        # get block locations in nodes
-        # get file name
-        # go to the nodes, use the id to delete the file blocks
-        # delete the xxx.json in this path
-        # pass
-    split = split_path(path)
-    filename = split[len(split) - 1]
-    split = split[:-1]
-    filename_hash = get_hash(filename)
+    if check_file_exists(path):
+        split = split_path(path)
+        filename = split[len(split) - 1]
+        split = split[:-1]
+        filename_hash = get_hash(filename)
 
-    partition_locations = get_partition_locations_helper(path)
-    for block in partition_locations.keys():
-        block_id = get_id(filename, block)
-        for node in partition_locations[block]:
-            node_address = get_node_address(node) + ".json"
-            nodedata = get_node_data(node_address)
-            nodedata[block_id] = {}
-            write_to_node(node_address, nodedata)
+        partition_locations = get_partition_locations_helper(path)
+        for block in partition_locations.keys():
+            block_id = get_id(filename, block)
+            for node in partition_locations[block]:
+                node_address = get_node_address(node) + ".json"
+                nodedata = get_node_data(node_address)
+                nodedata[block_id] = {}
+                write_to_node(node_address, nodedata)
 
-    metadata = json.loads(requests.get(METADATA_NODE_URL).text)
-    root = metadata['edfs']['root']
-    prev_dir = root
+        metadata = json.loads(requests.get(METADATA_NODE_URL + ".json").text)
+        root = metadata['edfs']['root']
+        prev_dir = root
 
-    for i in range(0, len(split) - 1):
-        name = split[i]
-        prev_dir = prev_dir[name]
-    current_dir = prev_dir[split[len(split) - 1]]
+        for i in range(0, len(split) - 1):
+            name = split[i]
+            prev_dir = prev_dir[name]
+        current_dir = prev_dir[split[len(split) - 1]]
 
-    current_dir[filename_hash] = {}
+        current_dir[filename_hash] = {}
 
 
-    current_dir_empty = True
-    for key in current_dir:
-        if current_dir[key] != {}:
-            current_dir_empty = False
+        current_dir_empty = True
+        for key in current_dir:
+            if current_dir[key] != {}:
+                current_dir_empty = False
 
-    if current_dir_empty:
-        prev_dir[split[len(split) - 1]] = ""
+        if current_dir_empty:
+            prev_dir[split[len(split) - 1]] = ""
 
-    metadata_json_file = json.dumps(metadata, indent=4)
-    response = requests.put(METADATA_NODE_URL, metadata_json_file)
+        metadata_json_file = json.dumps(metadata, indent=4)
+        response = requests.put(METADATA_NODE_URL + ".json", metadata_json_file)
 
-    # else:
-        # give error
-        # pass
-
+    else:
+        error(404)
 
 def put(file, path, num_partitions):
-    # if check_file_exists(path):
-    #     print("File already exists!")
-    # else:
-    file_partitions = partition_file(file, num_partitions)
-    block_locations = update_meta_data(file, path, num_partitions)
-    write_to_block(file, file_partitions, block_locations)
+    if check_file_exists(path):
+        error(1)
+    else:
+        filename = split_path(file)
+        filename = filename[len(filename) - 1]
+        file_partitions = partition_file(file, num_partitions)
+        block_locations = update_meta_data(filename, path, num_partitions)
+        write_to_block(filename, file_partitions, block_locations)
 
 
 def get_partition_locations(path):
@@ -319,44 +313,36 @@ def get_partition_locations(path):
 
 
 def get_partition_locations_helper(path):
-    # if check_file_exists(path):
-    split = split_path(path)
+    if check_file_exists(path):
+        split = split_path(path)
 
-    split[len(split) - 1] = get_hash(split[len(split) - 1])
+        split[len(split) - 1] = get_hash(split[len(split) - 1])
 
-    metadata = json.loads(requests.get(METADATA_NODE_URL + ".json").text)
-    root = metadata['edfs']['root']
-    current_dir = root
+        metadata = json.loads(requests.get(METADATA_NODE_URL + ".json").text)
+        root = metadata['edfs']['root']
+        current_dir = root
 
-    for name in split:
-        current_dir = current_dir[name]
+        for name in split:
+            current_dir = current_dir[name]
 
-    return current_dir['block_locations']
+        return current_dir['block_locations']
 
-    # else:
-    #     # give error
-    #     pass
+    else:
+        error(404)
 
 
 def read_partition(path, partitionNum):
-    # if check_file_exists(path):
-        # use index to get block's name in blocks, then use block_locations to
-        # get the nodes storing the block.
-        # then go to the node and read the data
-        # pass
+    if check_file_exists(path):
+        split = split_path(path)
+        block_name = "block" + str(partitionNum)
+        partition_locations = get_partition_locations_helper(path)
+        partition_location = partition_locations[block_name]
+        id = get_id(split[len(split) - 1], "block" + str(partitionNum))
 
-    split = split_path(path)
-    block_name = "block" + str(partitionNum)
-    partition_locations = get_partition_locations_helper(path)
-    partition_location = partition_locations[block_name]
-    id = get_id(split[len(split) - 1], "block" + str(partitionNum))
-
-    node_data = get_node_data(get_node_address(partition_location[0]) + ".json")
-    print(node_data[id])
-
-    # else:
-    #     # give error
-    #     pass
+        node_data = get_node_data(get_node_address(partition_location[0]) + ".json")
+        print(node_data[id])
+    else:
+        error(404)
 
 
 def usage():
