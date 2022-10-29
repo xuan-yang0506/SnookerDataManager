@@ -22,7 +22,7 @@ def init_database():
     metadata['nodes'] = {}
     for i in range(0, NUM_NODES):
         node = "node" + str(i + 1)
-        node_url = FIREBASE_URL + node + ".json"
+        node_url = FIREBASE_URL + node
         metadata['nodes'][node] = {}
         metadata['nodes'][node]['url'] = node_url
 
@@ -37,7 +37,7 @@ def init_database():
         node_address = get_node_address(node)
         node_data = {}
         node_data_json_file = json.dumps(node_data, indent=4)
-        response = requests.put(node_address, node_data_json_file)
+        response = requests.put(node_address + '.json', node_data_json_file)
 
 
 def get_node_address(node_name):
@@ -46,6 +46,7 @@ def get_node_address(node_name):
 
 
 def get_hash(str):
+    """returns the SHA-256 hash of the input"""
     return hashlib.sha256(bytes(str, encoding='utf-8')).hexdigest()
 
 
@@ -80,10 +81,6 @@ def assign_block_to_node(file_partition_num, file_name):
     # get hash of file_name, mod by number of nodes, and return the result
     return hash(file_name) * (file_partition_num + 1) % NUM_NODES
 
-def hash_file(filename):
-    """returns the SHA-256 hash of the filename"""
-    return hashlib.sha256(bytes(file, encoding='utf-8')).hexdigest()
-
 def split_path(path):
     split = path.split('/')
     while "" in split:
@@ -95,8 +92,9 @@ def check_file_exists(path):
     """check if a path exists in metadata"""
     split = split_path(path)
     filename = split[-1]
-    filename_hash = hash(filename)
+    filename_hash = get_hash(filename)
     path = "/".join(split[:-1]) + "/" + str(filename_hash)
+    print(path)
     response = requests.get(f'{METADATA_ROOT_URL}/{path}.json')
     if response.status_code == 200 and response.json() is not None:
         return True
@@ -129,22 +127,17 @@ def update_meta_data(file, path, num_partitions):
             "node3"
         ] }
     """
-    filename_hash = hash_file(file)
-    split = split_path(path)
-    metadata = json.loads(requests.get(METADATA_NODE_URL).text)
-    root = metadata['edfs']['root']
-    if type(root) is not dict:
-        metadata['edfs']['root'] = {}
-        root = metadata['edfs']['root']
-    current_dir = root
-    for name in split:
-        if name in current_dir.keys():
-            current_dir = current_dir[name]
-        if name not in current_dir.keys():
-            current_dir[name] = {}
-            current_dir = current_dir[name]
-    current_dir[filename_hash] = {}
-    current_dir = current_dir[filename_hash]
+    # check if path exists
+    if not check_path_exists(path):
+        error(404)
+    filename_hash = get_hash(file)
+    metadata = requests.get(f'{METADATA_ROOT_URL}{path}.json').json()
+    # check if it's an empty directory
+    if not isinstance(metadata, dict):
+        metadata = {}
+    
+    metadata[filename_hash] = {}
+    current_dir = metadata[filename_hash]
     current_dir['filename'] = file
     current_dir['blocks'] = []
     current_dir['block_locations'] = {}
@@ -158,7 +151,7 @@ def update_meta_data(file, path, num_partitions):
         current_dir['block_locations'][block_name].append("node" + str(block_location2 + 1))
 
     metadata_json_file = json.dumps(metadata, indent=4)
-    response = requests.put(METADATA_NODE_URL, metadata_json_file)
+    response = requests.put(f'{METADATA_ROOT_URL}{path}.json', metadata_json_file)
     return current_dir['block_locations']
 
 
@@ -215,10 +208,13 @@ def ls(path):
     if check_path_exists(path):
         dir_metadata = requests.get(f'{METADATA_ROOT_URL}{path}.json')
         for key in dir_metadata.json():
-            print(key)
+            # the case when the key is a file
+            if 'filename' in dir_metadata[key]:
+                print(dir_metadata[key]['filename'])
+            else:
+               print(key)
     else:
         error(404)
-
 
 
 def cat(path):
@@ -226,7 +222,11 @@ def cat(path):
     if check_file_exists(path):
         # get block locations in nodes
         # for each block, read the data from the nodes
-        file_metadata = requests.get(f'{METADATA_ROOT_URL}{path}.json').json()
+        split = split_path(path)
+        filename = split[-1]
+        filename_hash = get_hash(filename)
+        path = "/".join(split[:-1]) + "/" + str(filename_hash)
+        file_metadata = requests.get(f'{METADATA_ROOT_URL}/{path}.json').json()
         filename = file_metadata['filename']
         for block in file_metadata['blocks']:
             nodes = file_metadata['block_locations'][block]
@@ -239,7 +239,7 @@ def cat(path):
                 # try 3 times for a node, if failed, try the next node
                 for _ in range(3):
                     try:
-                        data = requests.get(f'{node_address}/{file_id}').json()
+                        data = requests.get(f'{node_address}/{file_id}.json').json()
                         print(data, end='')
                         read_success = True
                         break
@@ -248,7 +248,8 @@ def cat(path):
                 if read_success:
                     break
                 else:
-                    error(1)       
+                    error(1)    
+        print('')   
     else:
         error(404)
 
