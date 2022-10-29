@@ -11,8 +11,11 @@ NUM_NODES = 3
 def error(error_code):
     """give error message"""
     if error_code == 404:
-        return "404: Path does not exist!"
+        print("Error: Path does not exist!")
+    elif error_code == 1:
+        print("Error: Having issue reading the file, please try again later!")
     #TODO
+    sys.exit(1)
 
 def init_database():
     metadata = {}
@@ -38,7 +41,8 @@ def init_database():
 
 
 def get_node_address(node_name):
-    return FIREBASE_URL + node_name + ".json"
+    node_metadata = requests.get(f'{METADATA_NODE_URL}/nodes.json').json()
+    return node_metadata[node_name]['url']
 
 
 # returns as follows:
@@ -72,6 +76,9 @@ def assign_block_to_node(file_partition_num, file_name):
     # get hash of file_name, mod by number of nodes, and return the result
     return hash(file_name) * (file_partition_num + 1) % NUM_NODES
 
+def hash_file(filename):
+    """returns the SHA-256 hash of the filename"""
+    return hashlib.sha256(bytes(file, encoding='utf-8')).hexdigest()
 
 def split_path(path):
     split = path.split('/')
@@ -81,49 +88,44 @@ def split_path(path):
 
 
 def check_file_exists(path):
+    """check if a path exists in metadata"""
     split = split_path(path)
-
-    metadata = json.loads(requests.get(METADATA_NODE_URL).text)
-    root = metadata['edfs']['root']
-    current_dir = root
-
-    for name in split:
-        if type(current_dir) is dict and name in current_dir.keys():
-            current_dir = current_dir[name]
-        else:
-            return False
-    return True
+    filename = split[-1]
+    filename_hash = hash(filename)
+    path = "/".join(split[:-1]) + "/" + str(filename_hash)
+    response = requests.get(f'{METADATA_ROOT_URL}/{path}.json')
+    if response.status_code == 200 and response.json() is not None:
+        return True
+    return False
 
 def check_path_exists(path):
-    """
-    check if a path exists in metadata
-    """
-    dir_metadata = requests.get(f'{METADATA_ROOT_URL}/{path}.json')
-    if dir_metadata.status_code == 200:
+    """check if a path exists in metadata"""
+    dir_metadata = requests.get(f'{METADATA_ROOT_URL}{path}.json')
+    if dir_metadata.status_code == 200 and dir_metadata.json() is not None:
         return True
-    else:
-        return False
+    return False
 
 def update_meta_data(file, path, num_partitions):
-    # for each file partition number, use get_partition_node_number to get the corresponding node
-    # insert a xxx.json directory in edfs/root/
-    # for each file to be stored, it needs to have the following structure:
-    # - blocks: ["block1", "block2", ...]
-    # - block_locations: { "block1": ["node1", "node3"], "block2": ["node2", "node3"] }
-    # returns the block_locations:
-    #     { "block1": [
-    #         "node1",
-    #         "node3"
-    #     ],
-    #     "block2": [
-    #         "node2",
-    #         "node3"
-    #     ],
-    #     "block3": [
-    #         "node1",
-    #         "node3"
-    #     ] }
-    filename_hash = hashlib.sha256(bytes(file, encoding='utf-8')).hexdigest()
+    """for each file partition number, use get_partition_node_number to get the corresponding node
+    insert a xxx.json directory in edfs/root/
+    for each file to be stored, it needs to have the following structure:
+    - blocks: ["block1", "block2", ...]
+    - block_locations: { "block1": ["node1", "node3"], "block2": ["node2", "node3"] }
+    returns the block_locations:
+        { "block1": [
+            "node1",
+            "node3"
+        ],
+        "block2": [
+            "node2",
+            "node3"
+        ],
+        "block3": [
+            "node1",
+            "node3"
+        ] }
+    """
+    filename_hash = hash_file(file)
     split = split_path(path)
     metadata = json.loads(requests.get(METADATA_NODE_URL).text)
     root = metadata['edfs']['root']
@@ -162,7 +164,6 @@ def get_id(filename, block):
 def get_node_data(node_address):
     return json.loads(requests.get(node_address).text)
 
-
 def write_to_node(node_address, nodedata):
     metadata_json_file = json.dumps(nodedata, indent=4)
     response = requests.put(node_address, metadata_json_file)
@@ -181,7 +182,7 @@ def write_to_block(filename, file_partitions, block_locations):
             write_to_node(node_address, nodedata)
 
 
-
+# APIs
 def mkdir(path):
     """
     create a directory in metedata
@@ -189,17 +190,17 @@ def mkdir(path):
     print("mkdir " + path)
     # get the path of json file
     dir_path, new_dir = path.rsplit("/", 1)
-    dir_metadata = requests.get(f'{METADATA_NODE_URL}/{dir_path}.json')
+    dir_metadata = requests.get(f'{METADATA_ROOT_URL}{dir_path}.json')
     
     if check_path_exists(dir_path):
-        dir_metadata = requests.get(f'{METADATA_NODE_URL}/{dir_path}.json').json()
+        dir_metadata = requests.get(f'{METADATA_ROOT_URL}{dir_path}.json').json()
         if new_dir in dir_metadata:
             print("Directory already exists!")
         else:
-            dir_metadata[new_dir] = {}
-            requests.put(f'{METADATA_NODE_URL}/{dir_path}.json', json.dumps(dir_metadata))
+            dir_metadata[new_dir] = ""
+            requests.put(f'{METADATA_ROOT_URL}{dir_path}.json', json.dumps(dir_metadata))
     else:
-        print(error(404))
+        error(404)
 
 
 def ls(path):
@@ -207,30 +208,45 @@ def ls(path):
     List all directories and files under the given path
     """
     print("ls " + path)
-    dir_metadata = requests.get(f'{METADATA_NODE_URL}/{path}.json')
-    if dir_metadata.status_code == 200:
-        dir_metadata = dir_metadata.json()
-        for key in dir_metadata:
+    if check_path_exists(path):
+        dir_metadata = requests.get(f'{METADATA_ROOT_URL}{path}.json')
+        for key in dir_metadata.json():
             print(key)
     else:
-        print(error(404))
+        error(404)
 
 
 
 def cat(path):
     print("cat " + path)
-    if check_path_exists(path):
+    if check_file_exists(path):
         # get block locations in nodes
         # for each block, read the data from the nodes
-        file_metadata = requests.get(f'{METADATA_NODE_URL}/{path}.json').json()
+        file_metadata = requests.get(f'{METADATA_ROOT_URL}{path}.json').json()
+        filename = file_metadata['filename']
         for block in file_metadata['blocks']:
             nodes = file_metadata['block_locations'][block]
+            read_success = False
             for node in nodes:
-                node_url = METADATA_NODE_URL['nodes'][node]['url']
+                node_address = get_node_address(node)
+                file_id = get_id(filename, block)
                 # read the data from the node
-                pass
+                # for each block, we only need to read from one node
+                # try 3 times for a node, if failed, try the next node
+                for _ in range(3):
+                    try:
+                        data = requests.get(f'{node_address}/{file_id}').json()
+                        print(data, end='')
+                        read_success = True
+                        break
+                    except: 
+                        continue
+                if read_success:
+                    break
+                else:
+                    error(1)       
     else:
-        print(error(404))
+        error(404)
 
 
 def rm(path):
@@ -334,7 +350,6 @@ def main():
             usage()
     else:
         usage()
-
 
 
 if __name__ == "__main__":
