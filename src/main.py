@@ -184,7 +184,6 @@ def mkdir(path):
     """
     create a directory in metedata
     """
-    print("mkdir " + path)
     # get the path of json file
     dir_path, new_dir = path.rsplit("/", 1)
     dir_metadata = requests.get(f'{METADATA_ROOT_URL}{dir_path}.json')
@@ -205,7 +204,6 @@ def ls(path):
     """
     List all directories and files under the given path
     """
-    print("ls " + path)
     if check_path_exists(path):
         dir_metadata = requests.get(f'{METADATA_ROOT_URL}{path}.json').json()
         for key in dir_metadata:
@@ -219,7 +217,6 @@ def ls(path):
 
 
 def cat(path):
-    print("cat " + path)
     if check_file_exists(path):
         # get block locations in nodes
         # for each block, read the data from the nodes
