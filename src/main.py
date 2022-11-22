@@ -2,6 +2,7 @@ import sys
 import hashlib
 import requests
 import json
+from multiprocessing.dummy import Pool as ThreadPool
 
 FIREBASE_URL = "https://snookerdatamanager-default-rtdb.firebaseio.com/"
 METADATA_NODE_URL = FIREBASE_URL + "metadata"
@@ -35,7 +36,7 @@ def init_database():
     for i in range(0, NUM_NODES):
         node = "node" + str(i + 1)
         node_address = get_node_address(node)
-        node_data = {}
+        node_data = "" # init with empty node
         node_data_json_file = json.dumps(node_data, indent=4)
         response = requests.put(node_address + '.json', node_data_json_file)
 
@@ -79,7 +80,8 @@ def put_firebase_file(file, firebase_path, num_pieces):
 
 def assign_block_to_node(file_partition_num, file_name):
     # get hash of file_name, mod by number of nodes, and return the result
-    return hash(file_name) * (file_partition_num + 1) % NUM_NODES
+    return (hash(file_name) + file_partition_num) % NUM_NODES
+
 
 def split_path(path):
     split = path.split('/')
@@ -94,7 +96,6 @@ def check_file_exists(path):
     filename = split[-1]
     filename_hash = get_hash(filename)
     path = "/".join(split[:-1]) + "/" + str(filename_hash)
-    print(path)
     response = requests.get(f'{METADATA_ROOT_URL}/{path}.json')
     if response.status_code == 200 and response.json() is not None:
         return True
@@ -334,13 +335,27 @@ def read_partition(path, partitionNum):
         block_name = "block" + str(partitionNum)
         partition_locations = get_partition_locations_helper(path)
         partition_location = partition_locations[block_name]
-        id = get_id(split[len(split) - 1], "block" + str(partitionNum))
-
-        node_data = get_node_data(get_node_address(partition_location[0]) + ".json")
-        print(node_data[id])
+        block_id = get_id(split[len(split) - 1], "block" + str(partitionNum))
+        return get_node_data(get_node_address(partition_location[0])+ "/" + block_id + ".json")
     else:
         error(404)
 
+def map_partition(path, partitionNum, mapFunc):
+    data = read_partition(path, partitionNum)
+    data = mapFunc(data)
+    return data
+
+def reduce(data_partitions, combineFunc):
+    it = iter(data_partitions)
+    value = next(it)
+    for element in it:
+        value = combineFunc(value, element)
+    return value
+
+def map_reduce(path, mapFunc, combineFunc, num_partitions):
+    with ThreadPool(10) as pool:
+        data_partitions = pool.map(mapFunc, [i for i in range(num_partitions)])
+    return reduce(data_partitions, combineFunc)
 
 def usage():
     print("Usage: ")
@@ -376,7 +391,8 @@ def main():
         if sys.argv[1] == "readPartition":
             path = sys.argv[2]
             partition_number = sys.argv[3]
-            read_partition(path, partition_number)
+            data = read_partition(path, partition_number)
+            print(data)
         else:
             usage()
     elif arg_length == 5:
