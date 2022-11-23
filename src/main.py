@@ -1,3 +1,4 @@
+import csv
 import sys
 import hashlib
 import requests
@@ -51,23 +52,35 @@ def get_hash(str):
     return hashlib.sha256(bytes(str, encoding='utf-8')).hexdigest()
 
 
+def format_output(list, num_pieces):
+    piece_length = len(list) // num_pieces
+    output = {}
+    i = 0
+    for i in range(0, num_pieces):
+            if i == num_pieces - 1:
+                output["block" + str(i + 1)] = list[i * piece_length:]
+            else:
+                output["block" + str(i + 1)] = list[i * piece_length: (i + 1) * piece_length]
+    return output
+
+
 # returns as follows:
 # {"block1": "first part of file",
 #  "block2": "second part of file",
 #  "block3": "third part of file"}
 def partition_file(file, num_pieces):
-    f = open(file)
-    content = f.read()
-    num_characters = len(content)
-    piece_length = num_characters // num_pieces
-    output = {}
-    i = 0
-    for i in range(0, num_pieces):
-        if i == num_pieces - 1:
-            output["block" + str(i + 1)] = content[i * piece_length:]
-        else:
-            output["block" + str(i + 1)] = content[i * piece_length: (i + 1) * piece_length]
-    return output
+    if file[len(file) - 3:] == "csv":
+        f = open(file, newline='')
+        csvfile = csv.reader(f, delimiter=',', quotechar = '|')
+        content = []
+        for row in csvfile:
+            while ("" in row):
+                row.remove("")
+            content.append(row)
+    else:
+        f = open(file)
+        content = f.read()
+    return format_output(content, num_pieces)
 
 
 def get_firebase_file(firebase_path):
