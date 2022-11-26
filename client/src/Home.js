@@ -5,6 +5,7 @@ import {Container, FormControl, Tabs, Tab, Box} from '@mui/material';
 import Players from './Players';
 import Games from './Games';
 import Tournaments from './Tournaments';
+import Ranking from './Ranking';
 
 
 function TabPanel(props) {
@@ -46,6 +47,7 @@ function NavTabs() {
                   <Tab label="Players" />
                   <Tab label="Games" />
                   <Tab label="Tournaments" />
+                  <Tab label="Ranking" />
               </Tabs>
           </Box>
         </FormControl>
@@ -58,6 +60,9 @@ function NavTabs() {
           </TabPanel>
           <TabPanel value={value} index={2}>
             <Tournaments />
+          </TabPanel>
+          <TabPanel value={value} index={3}>
+            <Ranking />
           </TabPanel>
         </FormControl>
       </div>
