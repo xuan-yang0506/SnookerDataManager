@@ -1,7 +1,7 @@
 import React from 'react';
 
 
-export default function Players() {
+export default function Tournaments() {
     return (
         <div>
             <h1>Tournaments</h1>

@@ -39,6 +39,7 @@ function NavTabs() {
         setValue(newValue);
     };
     return (
+      <div>
         <FormControl sx={{ m: 1, flexGrow: 1}}>
           <Box>
               <Tabs value={value} onChange={handleChange}>
@@ -47,6 +48,8 @@ function NavTabs() {
                   <Tab label="Tournaments" />
               </Tabs>
           </Box>
+        </FormControl>
+        <FormControl sx={{ m: 1, flexGrow: 1}}>
           <TabPanel value={value} index={0}> 
             <Players />                 
           </TabPanel>
@@ -57,6 +60,7 @@ function NavTabs() {
             <Tournaments />
           </TabPanel>
         </FormControl>
+      </div>
     );
 }
 

@@ -1,10 +1,10 @@
 import React from 'react';
 
 
-export default function Players() {
+export default function Games() {
     return (
         <div>
-            <h1>games</h1>
+            <h1>Games</h1>
         </div>
     );
 }
