@@ -50,6 +50,8 @@ def search_games():
     player2_name = request.args.get("player2")
     tournament = request.args.get("tournament")
     year = request.args.get("year")
+    player1_name = None if player1_name == '' else player1_name
+    player2_name = None if player2_name == '' else player2_name
 
     if player1_name is None and player2_name is None and tournament is None and year is None:
         return {}
@@ -97,6 +99,7 @@ def search_games():
                 newItem += item
                 newItem += tournamentMap[tournamentId]
                 output.append(newItem)
+        print(output)
         return jsonify(output)
 
 @app.route('/api/getCountries', methods=['GET'])
