@@ -14,10 +14,10 @@ def index():
 
 @app.route('/api/searchPlayers', methods=['GET'])
 def search_players():
-    # print(request.json)
-    # return jsonify('Hello World')
     name = request.args.get("name")
     country = request.args.get("country")
+    name = None if name == '' else name
+    
     if name is None and country is None:
         return {}
     if name is not None:
@@ -40,13 +40,14 @@ def search_players():
     def combineFunc(value, element):
         return value + element
     result = main.map_reduce("/snooker/players_r.csv", mapFunc, combineFunc, 3)
+    print(result)
     return jsonify(result)
 
 
 
 @app.route('/api/getCountries', methods=['GET'])
 def get_countries():
-    df = pandas.read_csv('data/snooker/players_r.csv')
+    df = pandas.read_csv('../data/snooker/players_r.csv')
     countries = df['country'].unique()
     return jsonify(countries.tolist())
 
