@@ -3,6 +3,37 @@ import {FormControl, TextField, Grid, Autocomplete, Button} from '@mui/material'
 
 const years = Array.from({length: 2019 - 1982 + 1}, (_, i) => String(1982 + i));
 
+function GamesTable(props) {
+    // const columns = [
+    //     { field: "first_name", headerName: "First Name"},
+    //     { field: "last_name", headerName: "Last Name"},
+    //     { field: "country", headerName: "Country"},
+    //     { field: "link", headerName: "Link", renderCell: renderLink},
+    // ];
+    // const data = props.data;
+
+    // const rows = useMemo(() => {
+    //     return props.data.map((player, id) => {
+    //         return {
+    //             id: id,
+    //             first_name: player[2],
+    //             last_name: player[3],
+    //             country: player[5],
+    //             link: player[0],
+    //         }
+    //     });
+    // }, [data]);
+
+    // return (
+    //     <div style={{ height: 600, width: "100%"}}>
+    //         <DataGrid
+    //             rows={rows}
+    //             columns={columns}
+    //         />
+    //     </div>
+    // )
+}
+
 export default function Games() {
     const [player1, setPlayer1] = React.useState('');
     const [player2, setPlayer2] = React.useState('');
@@ -69,7 +100,7 @@ export default function Games() {
                     <Button variant="contained" onClick={searchGames}>Search</Button>
                 </Grid>
             </Grid>
-            {data && 'TODO: Display the data'}
+            {data}
         </div>
     );
 }

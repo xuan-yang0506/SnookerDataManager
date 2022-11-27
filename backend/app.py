@@ -102,16 +102,17 @@ def search_games():
 @app.route('/api/getCountries', methods=['GET'])
 def get_countries():
     def mapFunc(data):
-        unique = {}
+        countries = set()
         for item in data:
             country = item[len(item) - 1]
             if country != "country":
-                unique[country] = 1
-        return list(unique.keys())
+                countries.add(country)
+        return countries
 
     def combineFunc(value, element):
-        return value + element
+        return value.union(element)
     result = main.map_reduce("/snooker/players_r.csv", mapFunc, combineFunc, num_partition)
+    result = list(result)
     return jsonify(result)
 
 
