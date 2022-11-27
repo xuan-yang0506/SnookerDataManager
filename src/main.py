@@ -8,7 +8,7 @@ from multiprocessing.dummy import Pool as ThreadPool
 FIREBASE_URL = "https://snookerdatamanager-default-rtdb.firebaseio.com/"
 METADATA_NODE_URL = FIREBASE_URL + "metadata"
 METADATA_ROOT_URL = METADATA_NODE_URL + "/edfs/root"
-NUM_NODES = 3
+NUM_NODES = 20
 
 def error(error_code):
     """give error message"""
@@ -74,8 +74,8 @@ def partition_file(file, num_pieces):
         csvfile = csv.reader(f, delimiter=',', quotechar = '|')
         content = []
         for row in csvfile:
-            while ("" in row):
-                row.remove("")
+            # while ("" in row):
+            #     row.remove("")
             content.append(row)
     else:
         f = open(file)
