@@ -24,19 +24,25 @@ def search_players():
         return {}
     if name is not None:
         name_split = name.split(" ")
-        first_name = name_split[0].lower()
-        last_name = name_split[1].lower()
+        first_name = ""
+        last_name = ""
+        if len(name_split) > 0:
+            first_name = name_split[0].lower()
+            if len(name_split) > 1:
+                last_name = name_split[1].lower()
         def mapFunc(data):
             output = []
             for item in data:
-                if item[2].lower() == first_name and item[3].lower() == last_name and (country is None or item[5] == country):
+                if (first_name is None or first_name in item[2].lower()) and \
+                    (last_name is None or last_name in item[3].lower()) and \
+                    (country is None or country.lower() in item[5].lower()):
                     output.append(item)
             return output
     else:
         def mapFunc(data):
             output = []
             for item in data:
-                if item[5] == country:
+                if country.lower() in item[5].lower():
                     output.append(item)
             return output
     def combineFunc(value, element):
@@ -60,10 +66,8 @@ def search_games():
             output = []
             for item in data:
                 if len(item) >= 8 and \
-                    (player1_name is None or player1_name == item[5]) and \
-                    (player2_name is None or player2_name == item[7]):
-                    output.append(item)
-                if len(item) >= 8 and (player1_name == item[5]):
+                    (player1_name is None or player1_name.lower() in item[5].lower()) and \
+                    (player2_name is None or player2_name.lower() in item[7].lower()):
                     output.append(item)
             return output
         def combineFuncPlayer(value, element):
@@ -77,7 +81,7 @@ def search_games():
             for item in data:
                 if len(item) >= 4 and \
                     (year is None or year == item[2]) and \
-                    (tournament is None or tournament == item[3]):
+                    (tournament is None or tournament.lower() in item[3].lower()):
                     output.append(item)
             return output
         def combineFuncTournament(value, element):
