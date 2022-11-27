@@ -175,22 +175,19 @@ def get_id(filename, block):
 def get_node_data(node_address):
     return json.loads(requests.get(node_address).text)
 
-def write_to_node(node_address, nodedata):
-    metadata_json_file = json.dumps(nodedata, indent=4)
-    response = requests.put(node_address, metadata_json_file)
+def write_to_node(address, data):
+    data = json.dumps(data, indent=4)
+    response = requests.put(address, data)
 
 def write_to_block(filename, file_partitions, block_locations):
     # file_partitions: {'block1': 'abc', 'block2': 'def', 'block3': 'ghi\n'}
     # block_locations: {'block1': ['node2', 'node0'], 'block2': ['node1', 'node2'], 'block3': ['node0', 'node1']}
     for block in file_partitions.keys():
         for node in block_locations[block]:
-            node_address = get_node_address(node) + ".json"
+            node_address = get_node_address(node)
             block_id = get_id(filename, block)
-            nodedata = get_node_data(node_address)
-            if type(nodedata) is not dict:
-                nodedata = {}
-            nodedata[block_id] = file_partitions[block]
-            write_to_node(node_address, nodedata)
+            data_address =  node_address + "/" + block_id + ".json"
+            write_to_node(data_address, file_partitions[block])
 
 
 # APIs

@@ -1,5 +1,33 @@
 import React from 'react';
-import {FormControl, TextField, Grid, Autocomplete, Button} from '@mui/material';
+import {TextField, Grid, Autocomplete, Button} from '@mui/material';
+import {DataGrid} from '@mui/x-data-grid';
+
+function PlayersTable(props) {
+    const columns = [
+        { field: 'first_name', headerName: 'First Name', width: 70 },
+        { field: 'last_name', headerName: 'Last Name', width: 70 },
+        { field: 'country', headerName: 'Country', width: 70 },
+    ];
+
+    const rows = props.data.map((player) => {
+        return {
+            first_name: player[2],
+            last_name: player[3],
+            country: player[5],
+        }
+    });
+
+    alert(rows);
+
+    return (
+        <div style={{ maxHeight: 600}}>
+            <DataGrid
+                rows={rows}
+                columns={columns}
+            />
+        </div>
+    )
+}
 
 export default function Players() {
     const [name, setName] = React.useState('');
@@ -20,13 +48,7 @@ export default function Players() {
     }
 
     const searchPlayers = () => {
-        fetch('/api/searchPlayers',{
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({name: name, country: country}),
-        })
+        fetch('/api/searchPlayers?' + new URLSearchParams({name: name, country: country}))
             .then(response => {return response.json()})
             .then(data => {setData(data)})
     };
@@ -54,7 +76,7 @@ export default function Players() {
                     <Button variant="contained" onClick={searchPlayers}>Search</Button>
                 </Grid>
             </Grid>
-            {data && 'TODO: Display the data'}
+            {data && <PlayersTable data={data} />}
         </div>
     );
 }
