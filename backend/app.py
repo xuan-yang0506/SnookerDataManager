@@ -58,12 +58,10 @@ def search_games():
             if data is None:
                 return []
             output = []
-            print(len(data))
             for item in data:
                 if len(item) >= 8 and \
                     (player1_name is None or player1_name == item[5]) and \
                     (player2_name is None or player2_name == item[7]):
-                    print(item)
                     output.append(item)
                 if len(item) >= 8 and (player1_name == item[5]):
                     output.append(item)
@@ -90,7 +88,7 @@ def search_games():
         output = []
         for item in tournamentFilterResult:
             tournamentId = item[0]
-            tournamentMap[tournamentId] = item
+            tournamentMap[tournamentId] = 1
 
         for item in playerFilterResult:
             tournamentId = item[0]
@@ -99,16 +97,26 @@ def search_games():
                 newItem += item
                 newItem += tournamentMap[tournamentId]
                 output.append(newItem)
-        return jsonify(playerFilterResult)
-
-            
-
+        return jsonify(output)
 
 @app.route('/api/getCountries', methods=['GET'])
 def get_countries():
-    df = pandas.read_csv('../data/snooker/players_r.csv')
-    countries = df['country'].unique()
-    return jsonify(countries.tolist())
+    def mapFunc(data):
+        unique = {}
+        for item in data:
+            country = item[len(item) - 1]
+            if country != "country":
+                unique[country] = 1
+        return list(unique.keys())
+
+    def combineFunc(value, element):
+        return value + element
+    result = main.map_reduce("/snooker/players_r.csv", mapFunc, combineFunc, num_partition)
+    return jsonify(result)
+
+
+# @app.route('api/searchTournaments', methods=['GET'])
+# def get_tournaments():
 
 
 if __name__ == '__main__':
