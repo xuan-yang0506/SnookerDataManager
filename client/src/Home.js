@@ -51,20 +51,22 @@ function NavTabs() {
               </Tabs>
           </Box>
         </FormControl>
-        <FormControl sx={{ m: 1, flexGrow: 1}}>
-          <TabPanel value={value} index={0}> 
-            <Players />                 
-          </TabPanel>
-          <TabPanel value={value} index={1}>
-            <Games />
-          </TabPanel>
-          <TabPanel value={value} index={2}>
-            <Tournaments />
-          </TabPanel>
-          <TabPanel value={value} index={3}>
-            <Ranking />
-          </TabPanel>
-        </FormControl>
+        <div>
+          <FormControl sx={{ m: 1, flexGrow: 1}}>
+            <TabPanel value={value} index={0}> 
+              <Players />                 
+            </TabPanel>
+            <TabPanel value={value} index={1}>
+              <Games />
+            </TabPanel>
+            <TabPanel value={value} index={2}>
+              <Tournaments />          
+            </TabPanel>
+            <TabPanel value={value} index={3}>
+              <Ranking />
+            </TabPanel>
+          </FormControl>
+        </div>
       </div>
     );
 }

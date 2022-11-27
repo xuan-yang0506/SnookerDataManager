@@ -37,26 +37,24 @@ export default function Players() {
 
     return (
         <div>
-            <FormControl sx={{ m: 1, flexGrow: 1}}>
-                <Grid container spacing={2}>
-                    <Grid item xs={12} sm={5}>
-                        <TextField id="outlined-basic" label="Name" variant="standard" onChange={handleNameChange} />
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                        <Autocomplete 
-                            value={country}
-                            onChange={(_, newValue) => {setCountry(newValue)}}
-                            disablePortal
-                            options={countries}
-                            renderInput={(params) => <TextField {...params} label="Country" variant='standard'/>}
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={3} alignItems="end" style={{ display: "flex"}}>
-                        <Button variant="contained" onClick={searchPlayers}>Search</Button>
-                    </Grid>
+            <Grid container spacing={2}>
+                <Grid item>
+                    <TextField id="outlined-basic" label="Name" variant="standard" onChange={handleNameChange} />
                 </Grid>
-            </FormControl>
-            {data && 'test'}
+                <Grid item>
+                    <Autocomplete 
+                        value={country}
+                        onChange={(_, newValue) => {setCountry(newValue)}}
+                        disablePortal
+                        options={countries}
+                        renderInput={(params) => <TextField {...params} label="Country" variant='standard'/>}
+                    />
+                </Grid>
+                <Grid item alignItems="end" style={{ display: "flex"}}>
+                    <Button variant="contained" onClick={searchPlayers}>Search</Button>
+                </Grid>
+            </Grid>
+            {data && 'TODO: Display the data'}
         </div>
     );
 }
