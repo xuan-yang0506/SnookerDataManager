@@ -18,24 +18,19 @@ def search_players():
     # return jsonify('Hello World')
     name = request.args.get("name")
     country = request.args.get("country")
+    if name is None and country is None:
+        return {}
     if name is not None:
         name_split = name.split(" ")
         first_name = name_split[0].lower()
         last_name = name_split[1].lower()
-        if country is not None:
-            def mapFunc(data):
-                output = []
-                for item in data:
-                    if item[2].lower() == first_name and item[3].lower() == last_name and item[5] == country:
-                        output.append(item)
-                return output
-        else:
-            def mapFunc(data):
-                output = []
-                for item in data:
-                    if item[2].lower() == first_name and item[3].lower() == last_name:
-                        output.append(item)
-    elif country is not None:
+        def mapFunc(data):
+            output = []
+            for item in data:
+                if item[2].lower() == first_name and item[3].lower() == last_name and (country is None or item[5] == country):
+                    output.append(item)
+            return output
+    else:
         def mapFunc(data):
             output = []
             for item in data:
@@ -44,7 +39,7 @@ def search_players():
             return output
     def combineFunc(value, element):
         return value + element
-    result = main.map_reduce("/user/players_r.csv", mapFunc, combineFunc, 3)
+    result = main.map_reduce("/snooker/players_r.csv", mapFunc, combineFunc, 3)
     return jsonify(result)
 
 
