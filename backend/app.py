@@ -101,14 +101,20 @@ def search_games():
                 output.append(newItem)
         return jsonify(playerFilterResult)
 
-            
-
-
 @app.route('/api/getCountries', methods=['GET'])
 def get_countries():
-    df = pandas.read_csv('../data/snooker/players_r.csv')
-    countries = df['country'].unique()
-    return jsonify(countries.tolist())
+    def mapFunc(data):
+        unique = {}
+        for item in data:
+            country = item[len(item) - 1]
+            if country != "country":
+                unique[country] = 1
+        return list(unique.keys())
+
+    def combineFunc(value, element):
+        return value + element
+    result = main.map_reduce("/snooker/players_r.csv", mapFunc, combineFunc, num_partition)
+    return jsonify(result)
 
 
 if __name__ == '__main__':
