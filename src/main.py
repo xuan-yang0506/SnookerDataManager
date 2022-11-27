@@ -367,7 +367,7 @@ def reduce(data_partitions, combineFunc):
 
 def map_reduce(path, mapFunc, combineFunc, num_partitions):
     with ThreadPool(10) as pool:
-        data_partitions = pool.map(mapFunc, [i for i in range(num_partitions)])
+        data_partitions = pool.starmap(map_partition, [(path, i, mapFunc) for i in range(num_partitions)])
     return reduce(data_partitions, combineFunc)
 
 def usage():
