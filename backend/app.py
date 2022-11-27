@@ -119,9 +119,24 @@ def get_countries():
     result = list(result)
     return jsonify(result)
 
-
-# @app.route('api/searchTournaments', methods=['GET'])
-# def get_tournaments():
+@app.route('/api/searchTournaments', methods=['GET'])
+def get_tournaments():
+    tournament = request.args.get("tournament")
+    year = request.args.get("year")
+    def mapFunc(data):
+        if data is None:
+            return []
+        output = []
+        for item in data:
+            if (tournament is None or tournament.lower() in item[3].lower()) and \
+                (year is None or year.lower() in item[2]) and \
+                item[2] != "year":
+                output.append(item)
+        return output
+    def combineFunc(value, element):
+        return value + element
+    result = main.map_reduce("/snooker/tournaments.csv", mapFunc, combineFunc, num_partition)
+    return jsonify(result)
 
 
 if __name__ == '__main__':
