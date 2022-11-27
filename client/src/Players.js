@@ -1,12 +1,23 @@
 import React from 'react';
 import {FormControl, TextField, Grid, Autocomplete, Button} from '@mui/material';
 
-const years = Array.from({length: 2019 - 1982 + 1}, (_, i) => String(1982 + i));
-
 export default function Players() {
     const [name, setName] = React.useState('');
-    const [year, setYear] = React.useState(null);
+    const [country, setCountry] = React.useState('');
+    const [countries, setCountries] = React.useState([]);
     const [data, setData] = React.useState(null);
+
+    const getCountries = () => {
+        fetch('/api/getCountries')
+            .then(response => response.json())
+            .then(data => {
+                setCountries(data);
+            });
+    }
+
+    if (!countries.length) {
+        getCountries();
+    }
 
     const searchPlayers = () => {
         fetch('/api/searchPlayers',{
@@ -14,10 +25,10 @@ export default function Players() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({name: name, year: year}),
+            body: JSON.stringify({name: name, country: country}),
         })
-        .then(response => {return response.json()})
-        .then(data => {alert(data);setData(data)})
+            .then(response => {return response.json()})
+            .then(data => {setData(data)})
     };
 
     const handleNameChange = (event) => {
@@ -33,11 +44,11 @@ export default function Players() {
                     </Grid>
                     <Grid item xs={12} sm={4}>
                         <Autocomplete 
-                            value={year}
-                            onChange={(event, newValue) => {setYear(newValue)}}
+                            value={country}
+                            onChange={(_, newValue) => {setCountry(newValue)}}
                             disablePortal
-                            options={years}
-                            renderInput={(params) => <TextField {...params} label="Year" variant='standard'/>}
+                            options={countries}
+                            renderInput={(params) => <TextField {...params} label="Country" variant='standard'/>}
                         />
                     </Grid>
                     <Grid item xs={12} sm={3} alignItems="end" style={{ display: "flex"}}>

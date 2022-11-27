@@ -74,7 +74,7 @@ export default class Home extends React.Component {
   render() {
     return (
       <div>
-        <Container maxWidth="sm" sx={{ mt: 20}} style={{textAlign: "center"}}>
+        <Container maxWidth="lg" sx={{ mt: 20}} style={{textAlign: "center"}}>
             <h1>Snooker Data Manager</h1>
             <p>Provide data for players and games.</p>
             <NavTabs />

@@ -1,5 +1,6 @@
 from flask import Flask
 from flask import jsonify, request
+import pandas
 
 app = Flask(__name__)
 
@@ -11,6 +12,12 @@ def index():
 def searchPlayers():
     print(request.json)
     return jsonify('Hello World')
+
+@app.route('/api/getCountries', methods=['GET'])
+def getCountries():
+    df = pandas.read_csv('data/snooker/players_r.csv')
+    countries = df['country'].unique()
+    return jsonify(countries.tolist())
 
 
 if __name__ == '__main__':
