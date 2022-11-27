@@ -20,6 +20,10 @@ def error(error_code):
     sys.exit(1)
 
 def init_database():
+    empty = ""
+    empty_json_file = json.dumps(empty, indent=4)
+    response = requests.delete(FIREBASE_URL + '.json')
+
     metadata = {}
     metadata['nodes'] = {}
     for i in range(0, NUM_NODES):
