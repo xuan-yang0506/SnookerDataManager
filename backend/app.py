@@ -90,7 +90,7 @@ def search_games():
         output = []
         for item in tournamentFilterResult:
             tournamentId = item[0]
-            tournamentMap[tournamentId] = 1
+            tournamentMap[tournamentId] = item
 
         for item in playerFilterResult:
             tournamentId = item[0]
