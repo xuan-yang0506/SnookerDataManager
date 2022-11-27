@@ -1,26 +1,38 @@
 import React from 'react';
+import { useMemo } from 'react';
 import {TextField, Grid, Autocomplete, Button} from '@mui/material';
 import {DataGrid} from '@mui/x-data-grid';
 
 function PlayersTable(props) {
+    const renderLink = (params) => {
+        return (
+            <a href={params.row.link} target="_blank">Link</a>
+        );
+    };
+
     const columns = [
-        { field: 'first_name', headerName: 'First Name', width: 70 },
-        { field: 'last_name', headerName: 'Last Name', width: 70 },
-        { field: 'country', headerName: 'Country', width: 70 },
+        { field: "first_name", headerName: "First Name"},
+        { field: "last_name", headerName: "Last Name"},
+        { field: "country", headerName: "Country"},
+        { field: "link", headerName: "Link", renderCell: renderLink},
     ];
+    const data = props.data;
 
-    const rows = props.data.map((player) => {
-        return {
-            first_name: player[2],
-            last_name: player[3],
-            country: player[5],
-        }
-    });
 
-    alert(rows);
+    const rows = useMemo(() => {
+        return props.data.map((player, id) => {
+            return {
+                id: id,
+                first_name: player[2],
+                last_name: player[3],
+                country: player[5],
+                link: player[0],
+            }
+        });
+    }, [data]);
 
     return (
-        <div style={{ maxHeight: 600}}>
+        <div style={{ height: 600, width: "100%"}}>
             <DataGrid
                 rows={rows}
                 columns={columns}
@@ -70,13 +82,16 @@ export default function Players() {
                         disablePortal
                         options={countries}
                         renderInput={(params) => <TextField {...params} label="Country" variant='standard'/>}
+                        sx={{ minWidth:150}}
                     />
                 </Grid>
                 <Grid item alignItems="end" style={{ display: "flex"}}>
                     <Button variant="contained" onClick={searchPlayers}>Search</Button>
                 </Grid>
             </Grid>
-            {data && <PlayersTable data={data} />}
+            <div style={{marginTop: 10}}>
+                {data && <PlayersTable data={data} />}
+            </div>
         </div>
     );
 }
