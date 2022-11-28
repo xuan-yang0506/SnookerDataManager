@@ -190,9 +190,8 @@ def gsearch_tournaments():
         data = requests.get(url).json()
         output = []
         if tournament is not None:
-            for key in data.keys():
-                output.append(data[key])
-            return output
+            print(data)
+            return list(data.values())
         else:
             return data
     def combineFuncTournament(value, element):
@@ -222,8 +221,7 @@ def gsearch_tournaments():
 def get_tournaments():
     '''get a list of all unique tournaments' names'''
     def mapFunc(data_address):
-        url = data_address + '?orderby="name"'
-        data = requests.get(url).json()
+        data = requests.get(data_address).json()
         data = set(map(lambda x: x[3], data))
         return data
     
