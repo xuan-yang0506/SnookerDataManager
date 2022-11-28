@@ -20,7 +20,7 @@ def intersection(lst1, lst2):
 def put_data():
     write = request.args.get("write")
 
-    data_dir = "../data/"
+    data_dir = "../data/snooker/"
     filename_list = {'matches_r.csv', 
                     'players_r.csv',
                     'tournaments.csv', 
