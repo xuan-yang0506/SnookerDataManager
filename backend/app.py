@@ -303,6 +303,32 @@ def get_players():
     result = main.map_reduce("/snooker/players_r.csv", mapFunc, combineFunc, num_partition)
     result = sorted(result)
     return jsonify(result)
+
+@app.route('/api/searchRank', methods=['GET'])
+def search_rank():
+    year = request.args.get("year")
+
+    def mapFunc(data_address):
+        url = data_address + '?orderBy="0"&equalTo="' + year + '"'
+        output = []
+        print(url)
+        data = requests.get(url).json()
+        for item in data.values():
+            row = []
+            if len(item) >= 4 and item[0] != 'Year' and item[3].isnumeric() and item[3] != "0":
+                row.append(item[0])
+                row.append(item[1])
+                row.append(item[2])
+                row.append(item[3])
+                output.append(row)
+        return output
+    
+    def combineFunc(element, value):
+        return element + value
+    
+    result = main.map_reduce("/snooker/World_Rankings.csv", mapFunc, combineFunc, num_partition)
+    result.sort(key = lambda x: int(x[3]))
+    return result
     
 if __name__ == '__main__':
     app.run('127.0.0.1', port=5000, debug=True)
