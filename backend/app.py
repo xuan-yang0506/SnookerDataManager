@@ -103,7 +103,6 @@ def search_games():
                 newItem += item
                 newItem += tournamentMap[tournamentId]
                 output.append(newItem)
-        print(output)
         return jsonify(output)
 
 @app.route('/api/getCountries', methods=['GET'])
