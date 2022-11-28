@@ -48,7 +48,7 @@ export default function Players() {
     const [data, setData] = React.useState(null);
 
     const getCountries = () => {
-        fetch('/api/getCountries')
+        fetch('/api/getCountriesList')
             .then(response => response.json())
             .then(data => {
                 setCountries(data);

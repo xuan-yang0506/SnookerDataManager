@@ -10,6 +10,7 @@ function GamesTable(props) {
     const columns = [
         { field: 'year', headerName: 'Year', width:70},
         { field: "tournament", headerName: "Tournament", width: 200},
+        { field: "stage", headerName: "Stage", width: 70},
         { field: "player1", headerName: "Player 1", width: 120},
         { field: "score", headerName: "Score", width: 70},
         { field: "player2", headerName: "Player 2", width: 120},
@@ -20,9 +21,10 @@ function GamesTable(props) {
     const rows = useMemo(() => {
         return props.data.map((match, id) => {
             return {
-                id: match[1],
+                id: Number(match[1]),
                 year: match[15],
                 tournament: match[16],
+                stage: match[3],
                 player1: match[5],
                 score: match[9] + ' : ' + match[10],
                 player2: match[7],
@@ -50,16 +52,16 @@ export default function Games() {
     const [data, setData] = React.useState(null);
 
     const getTournaments = () => {
-        fetch('/api/getTournaments')
+        fetch('/api/getTournamentsList')
             .then(response => response.json())
             .then(data => {
                 setTournaments(data);
             });
     }
 
-    // if (!tournaments.length) {
-    //     getTournaments();
-    // }
+    if (!tournaments.length) {
+        getTournaments();
+    }
 
     const searchGames = () => {
         fetch('/api/searchGames?' + new URLSearchParams({player1: player1, player2: player2, year: year, tournament: tournament}))

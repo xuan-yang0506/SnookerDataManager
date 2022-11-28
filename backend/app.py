@@ -1,6 +1,7 @@
 from flask import Flask
 from flask import jsonify, request
 import pandas
+import requests
 
 import sys
 sys.path.append("..")
@@ -108,24 +109,22 @@ def search_games():
                 output.append(newItem)
         return jsonify(output)
 
-@app.route('/api/getCountries', methods=['GET'])
+@app.route('/api/getCountriesList', methods=['GET'])
 def get_countries():
-    def mapFunc(data):
-        countries = set()
-        for item in data:
-            country = item[len(item) - 1]
-            if country != "country":
-                countries.add(country)
+    def mapFunc(data_address):
+        url = data_address
+        data = requests.get(url).json()
+        countries = set(map(lambda x: x[5], data))
         return countries
 
     def combineFunc(value, element):
         return value.union(element)
     result = main.map_reduce("/snooker/players_r.csv", mapFunc, combineFunc, num_partition)
-    result = list(result)
+    result = sorted(list(result))
     return jsonify(result)
 
 @app.route('/api/searchTournaments', methods=['GET'])
-def get_tournaments():
+def gsearch_tournaments():
     tournament = request.args.get("tournament")
     year = request.args.get("year")
     def mapFunc(data):
@@ -143,6 +142,19 @@ def get_tournaments():
     result = main.map_reduce("/snooker/tournaments.csv", mapFunc, combineFunc, num_partition)
     return jsonify(result)
 
+@app.route('/api/getTournamentsList', methods=['GET'])
+def get_tournaments():
+    '''get a list of all unique tournaments' names'''
+    def mapFunc(data_address):
+        url = data_address + '?orderby="name"'
+        data = requests.get(url).json()
+        data = set(map(lambda x: x[3], data))
+        return data
+    def combineFunc(value, element):
+        return value.union(element)
+    result = main.map_reduce("/snooker/tournaments.csv", mapFunc, combineFunc, num_partition)
+    result = sorted(list(result))
+    return jsonify(result)
 
 if __name__ == '__main__':
     app.run('127.0.0.1', port=5000, debug=True)

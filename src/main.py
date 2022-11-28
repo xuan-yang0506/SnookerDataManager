@@ -358,8 +358,14 @@ def read_partition(path, partitionNum):
         error(404)
 
 def map_partition(path, partitionNum, mapFunc):
-    data = read_partition(path, partitionNum)
-    data = mapFunc(data)
+    split = split_path(path)
+    block_name = "block" + str(partitionNum)
+    partition_locations = get_partition_locations_helper(path)
+    partition_location = partition_locations[block_name]
+    block_id = get_id(split[len(split) - 1], "block" + str(partitionNum))
+    data_address = get_node_address(partition_location[0]) + "/" + block_id + ".json"
+
+    data = mapFunc(data_address)
     return data
 
 def reduce(data_partitions, combineFunc):
