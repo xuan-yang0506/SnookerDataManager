@@ -35,40 +35,70 @@ TabPanel.propTypes = {
 };
 
 function NavTabs() {
-    const [value, setValue] = React.useState(0);
-    const handleChange = (event, newValue) => {
-        setValue(newValue);
-    };
-    return (
+  const [value, setValue] = React.useState(0);
+
+  // get tournaments list
+  const [tournaments, setTournaments] = React.useState([]);
+  const getTournaments = () => {
+    fetch('/api/getTournamentsList')
+        .then(response => response.json())
+        .then(data => {
+            setTournaments(data);
+        });
+  }
+
+  if (!tournaments.length) {
+      getTournaments();
+  }
+
+  // get countries list
+  const [countries, setCountries] = React.useState([]);
+  const getCountries = () => {
+    fetch('/api/getCountriesList')
+        .then(response => response.json())
+        .then(data => {
+            setCountries(data);
+        });
+  }
+
+  if (!countries.length) {
+      getCountries();
+  } 
+
+  const handleChange = (_, newValue) => {
+      setValue(newValue);
+  };
+
+  return (
+    <div>
+      <FormControl sx={{ m: 1, flexGrow: 1}}>
+        <Box>
+            <Tabs value={value} onChange={handleChange}>
+                <Tab label="Players" />
+                <Tab label="Games" />
+                <Tab label="Tournaments" />
+                <Tab label="Ranking" />
+            </Tabs>
+        </Box>
+      </FormControl>
       <div>
         <FormControl sx={{ m: 1, flexGrow: 1}}>
-          <Box>
-              <Tabs value={value} onChange={handleChange}>
-                  <Tab label="Players" />
-                  <Tab label="Games" />
-                  <Tab label="Tournaments" />
-                  <Tab label="Ranking" />
-              </Tabs>
-          </Box>
+          <TabPanel value={value} index={0}> 
+            <Players countries={countries}/>                 
+          </TabPanel>
+          <TabPanel value={value} index={1}>
+            <Games tournaments={tournaments}/>
+          </TabPanel>
+          <TabPanel value={value} index={2}>
+            <Tournaments />          
+          </TabPanel>
+          <TabPanel value={value} index={3}>
+            <Ranking />
+          </TabPanel>
         </FormControl>
-        <div>
-          <FormControl sx={{ m: 1, flexGrow: 1}}>
-            <TabPanel value={value} index={0}> 
-              <Players />                 
-            </TabPanel>
-            <TabPanel value={value} index={1}>
-              <Games />
-            </TabPanel>
-            <TabPanel value={value} index={2}>
-              <Tournaments />          
-            </TabPanel>
-            <TabPanel value={value} index={3}>
-              <Ranking />
-            </TabPanel>
-          </FormControl>
-        </div>
       </div>
-    );
+    </div>
+  );
 }
 
 

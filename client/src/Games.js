@@ -43,32 +43,19 @@ function GamesTable(props) {
     )
 }
 
-export default function Games() {
+export default function Games(props) {
+    const tournaments = props.tournaments;
     const [player1, setPlayer1] = React.useState('');
     const [player2, setPlayer2] = React.useState('');
     const [year, setYear] = React.useState('');
-    const [tournaments, setTournaments] = React.useState([]);
     const [tournament, setTournament] = React.useState('');
     const [data, setData] = React.useState(null);
-
-    const getTournaments = () => {
-        fetch('/api/getTournamentsList')
-            .then(response => response.json())
-            .then(data => {
-                setTournaments(data);
-            });
-    }
-
-    if (!tournaments.length) {
-        getTournaments();
-    }
 
     const searchGames = () => {
         fetch('/api/searchGames?' + new URLSearchParams({player1: player1, player2: player2, year: year, tournament: tournament}))
             .then(response => {return response.json()})
             .then(data => {alert(data);setData(data)})
     };
-
 
     return (
         <div>
