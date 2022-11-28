@@ -5,7 +5,7 @@ import requests
 import json
 from multiprocessing.dummy import Pool as ThreadPool
 
-FIREBASE_URL = "https://snookerdatamanager-default-rtdb.firebaseio.com/"
+FIREBASE_URL = "https://test-16d97-default-rtdb.firebaseio.com/"
 METADATA_NODE_URL = FIREBASE_URL + "metadata"
 METADATA_ROOT_URL = METADATA_NODE_URL + "/edfs/root"
 NUM_NODES = 20
