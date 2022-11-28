@@ -12,6 +12,10 @@ app = Flask(__name__)
 num_partition = 20
 METADATA_ROOT_URL = main.METADATA_ROOT_URL
 
+def intersection(lst1, lst2):
+    lst3 = [value for value in lst1 if value in lst2]
+    return lst3
+
 @app.route('/api/setup', methods=["GET"])
 def put_data():
     write = request.args.get("write")
@@ -24,7 +28,7 @@ def put_data():
     index_map = {}
     index_map['matches_r.csv'] = ["0", "1", "5", "7"]
     index_map['players_r.csv'] = ["2", "3", "4", "5"]
-    index_map['tournaments.csv'] = ["0", "2", "4"]
+    index_map['tournaments.csv'] = ["0", "2", "3", "4"]
     index_map['World_Rankings.csv'] = ["0", "1", "2", "3"]
 
     if write == "1":
@@ -179,19 +183,39 @@ def get_countries():
 def gsearch_tournaments():
     tournament = request.args.get("tournament")
     year = request.args.get("year")
-    def mapFunc(data):
-        if data is None:
-            return []
+    def mapFuncTournament(data_address):
+        url = data_address + '?orderBy="3"'
+        if tournament is not None:
+            url += '&equalTo="' + tournament + '"'
+        data = requests.get(url).json()
         output = []
-        for item in data:
-            if (tournament is None or tournament.lower() in item[3].lower()) and \
-                (year is None or year.lower() in item[2]) and \
-                item[2] != "year":
-                output.append(item)
-        return output
-    def combineFunc(value, element):
+        if tournament is not None:
+            for key in data.keys():
+                output.append(data[key])
+            return output
+        else:
+            return data
+    def combineFuncTournament(value, element):
         return value + element
-    result = main.map_reduce("/snooker/tournaments.csv", mapFunc, combineFunc, num_partition)
+    tournamentResult = main.map_reduce("/snooker/tournaments.csv", mapFuncTournament, combineFuncTournament, num_partition)
+
+    def mapFuncYear(data_address):
+        url = data_address + '?orderBy="2"'
+        if year is not None:
+            url += '&equalTo="' + year + '"'
+        data = requests.get(url).json()
+        output = []
+        if year is not None:
+            for key in data.keys():
+                output.append(data[key])
+            return output
+        else:
+            return data
+    def combineFuncYear(value, element):
+        return value + element
+    yearResult = main.map_reduce("/snooker/tournaments.csv", mapFuncYear, combineFuncYear, num_partition)
+        
+    result = intersection(tournamentResult, yearResult)
     return jsonify(result)
 
 @app.route('/api/getTournamentsList', methods=['GET'])
