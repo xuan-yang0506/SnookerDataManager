@@ -13,11 +13,9 @@ NUM_NODES = 20
 def error(error_code):
     """give error message"""
     if error_code == 404:
-        print("Error: Path does not exist!")
+        return "Error: Path does not exist!"
     elif error_code == 1:
-        print("Error: Having issue reading the file, please try again later!")
-    #TODO
-    sys.exit(1)
+        return "Error: Having issue reading the file, please try again later!"
 
 def init_database():
     empty = ""
@@ -214,8 +212,9 @@ def mkdir(path):
         else:
             dir_metadata[new_dir] = ""
             requests.put(f'{METADATA_ROOT_URL}{dir_path}.json', json.dumps(dir_metadata))
+        return f"Directory {path} created."
     else:
-        error(404)
+        return error(404)
 
 
 def ls(path):
@@ -233,9 +232,7 @@ def ls(path):
                output.append(key)
         return output
     else:
-        # error(404)
-        print("Error: Path does not exist!")
-        return []
+        return error(404)
 
 
 def cat(path):
@@ -318,14 +315,15 @@ def rm(path):
         error(404)
 
 def put(file, path, num_partitions):
-    if check_file_exists(path):
-        error(1)
-    else:
+    if check_path_exists(path):
         filename = split_path(file)
         filename = filename[len(filename) - 1]
         file_partitions = partition_file(file, num_partitions)
         block_locations = update_meta_data(filename, path, num_partitions)
         write_to_block(filename, file_partitions, block_locations)
+        return f"Put {file} successfully into {path}"
+    else:
+        return error(404)
 
 
 def get_partition_locations(path):
@@ -403,10 +401,12 @@ def terminal(command):
             usage()
         else:
             if cmd == "mkdir":
-                mkdir(arg)
-                return f"Directory {arg} created."
+                msg = mkdir(arg)
+                return msg
             elif cmd == "ls":
                 output = ls(arg)
+                if type(output) == str:
+                    return output
                 msg = ""
                 for file in output:
                     msg += file + " "
@@ -435,8 +435,8 @@ def terminal(command):
             file = command[1]
             path = command[2]
             num_partitions = int(command[3])
-            put(file, path, num_partitions)
-            return f"Put {file} successfully into {path}"
+            msg = put(file, path, num_partitions)
+            return msg
         else:
             usage()
     else:
@@ -460,8 +460,14 @@ def main():
             if cmd == "mkdir":
                 mkdir(arg)
             elif cmd == "ls":
-                result = ls(arg)
-                print(result)
+                res = ls(arg)
+                if type(res) == str:
+                    print(res)
+                else:
+                    msg = ""
+                    for file in output:
+                        msg += file + " "
+                    print(msg)
             elif cmd == "cat":
                 res = cat(arg)
                 print(res)

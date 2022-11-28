@@ -307,16 +307,6 @@ def get_players():
     result = main.map_reduce("/snooker/players_r.csv", mapFunc, combineFunc, num_partition)
     result = sorted(result)
     return jsonify(result)
-
-@app.route('/api/terminal', methods=['GET'])
-def terminal():
-    command = request.args.get("command")
-    if command == 'null':
-        return {}
-    else:
-        command = command.split(' ')
-        result = main.terminal(command)
-        return jsonify(result)
     
 @app.route('/api/searchRank', methods=['GET'])
 def search_rank():
@@ -377,11 +367,12 @@ def create_tree(json, curdir):
     json["id"] = filename
     json["name"] = filename
     json["children"] = []
-    for sub in subdir:
-        if curdir != "/":
-            json["children"].append(create_tree({}, curdir + "/" + sub))
-        else:
-            json["children"].append(create_tree({}, curdir + sub))
+    if type(subdir) == list:
+        for sub in subdir:
+            if curdir != "/":
+                json["children"].append(create_tree({}, curdir + "/" + sub))
+            else:
+                json["children"].append(create_tree({}, curdir + sub))
     return json
 
 @app.route('/api/getNaviData', methods=['GET'])
@@ -389,6 +380,16 @@ def get_navi_data():
     root = "/"
     return jsonify(create_tree({}, root))
 
+@app.route('/api/terminal', methods=['GET'])
+def terminal():
+    command = request.args.get("command")
+    if command == 'null':
+        return {}
+    else:
+        command = command.split(' ')
+        result = main.terminal(command)
+        return jsonify(result)
+    
 if __name__ == '__main__':
     app.run('127.0.0.1', port=5000, debug=True)
     
