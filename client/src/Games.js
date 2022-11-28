@@ -50,20 +50,14 @@ export default function Games() {
             });
     }
 
-    if (!tournaments.length) {
-        getTournaments();
-    }
+    // if (!tournaments.length) {
+    //     getTournaments();
+    // }
 
     const searchGames = () => {
-        fetch('/api/searchGames',{
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({player1: player1, player2: player2, year: year, tournament: tournament}),
-        })
+        fetch('/api/searchGames?' + new URLSearchParams({player1: player1, player2: player2, year: year, tournament: tournament}))
             .then(response => {return response.json()})
-            .then(data => {setData(data)})
+            .then(data => {alert(data);setData(data)})
     };
 
 
