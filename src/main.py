@@ -284,9 +284,9 @@ def rm(path):
             block_id = get_id(filename, block)
             for node in partition_locations[block]:
                 node_address = get_node_address(node) + ".json"
-                nodedata = get_node_data(node_address)
-                nodedata[block_id] = {}
-                write_to_node(node_address, nodedata)
+                node_address = get_node_address(node)
+                delete_json_address = node_address + block_id + ".json"
+                requests.delete(delete_json_address)
 
         metadata = json.loads(requests.get(METADATA_NODE_URL + ".json").text)
         root = metadata['edfs']['root']
