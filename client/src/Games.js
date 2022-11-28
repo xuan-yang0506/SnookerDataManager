@@ -2,7 +2,6 @@ import React from 'react';
 import { useMemo } from 'react';
 import {TextField, Grid, Autocomplete, Button} from '@mui/material';
 import {DataGrid} from '@mui/x-data-grid';
-import {DataGridPro} from '@mui/x-data-grid-pro';
 
 const years = Array.from({length: 2019 - 1982 + 1}, (_, i) => String(1982 + i));
 
@@ -19,9 +18,9 @@ function GamesTable(props) {
     const data = props.data;
 
     const rows = useMemo(() => {
-        return props.data.map((match, id) => {
+        return data.map((match, id) => {
             return {
-                id: Number(match[1]),
+                id: id,
                 year: match[15],
                 tournament: match[16],
                 stage: match[3],
@@ -45,10 +44,10 @@ function GamesTable(props) {
 
 export default function Games(props) {
     const tournaments = props.tournaments;
-    const [player1, setPlayer1] = React.useState('');
-    const [player2, setPlayer2] = React.useState('');
-    const [year, setYear] = React.useState('');
-    const [tournament, setTournament] = React.useState('');
+    const [player1, setPlayer1] = React.useState(null);
+    const [player2, setPlayer2] = React.useState(null);
+    const [year, setYear] = React.useState(null);
+    const [tournament, setTournament] = React.useState(null);
     const [data, setData] = React.useState(null);
 
     const searchGames = () => {

@@ -5,17 +5,12 @@ import {TextField, Grid, Autocomplete, Button} from '@mui/material';
 
 const years = Array.from({length: 2019 - 1982 + 1}, (_, i) => String(1982 + i));
 
-function PlayersTable(props) {
-    const renderLink = (params) => {
-        return (
-            <a href={params.row.link} target="_blank">Link</a>
-        );
-    };
-
+function RankingTable(props) {
     const columns = [
         { field: "rank", headerName: "Rank"},
         { field: "first_name", headerName: "First Name"},
         { field: "last_name", headerName: "Last Name"},
+        { field: "year", headerName: "Year"},
     ];
     const data = props.data;
 
@@ -26,6 +21,7 @@ function PlayersTable(props) {
                 rank: player[3],
                 first_name: player[1],
                 last_name: player[2],
+                year: Number(player[0]),
             }
         });
     }, [data]);
@@ -40,32 +36,14 @@ function PlayersTable(props) {
     )
 }
 
-export default function Ranking() {
-    const [country, setCountry] = React.useState('');
-    const [countries, setCountries] = React.useState([]);
+export default function Ranking(props) {
+    const players = props.players;
+    const [name, setName] = React.useState(null);
     const [year, setYear] = React.useState(null);
     const [data, setData] = React.useState(null);
 
-    const getCountries = () => {
-        fetch('/api/getCountries')
-            .then(response => response.json())
-            .then(data => {
-                setCountries(data);
-            });
-    }
-
-    if (!countries.length) {
-        getCountries();
-    }
-
     const rankPlayers = () => {
-        fetch('/api/rankPlayers',{
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({year: year, country: country}),
-        })
+        fetch('/api/searchRank?' + new URLSearchParams({year: year, name: name}))
             .then(response => {return response.json()})
             .then(data => {setData(data)})
     };
@@ -75,12 +53,12 @@ export default function Ranking() {
             <Grid container spacing={2}>
                 <Grid item>
                     <Autocomplete 
-                        value={country}
-                        onChange={(_, newValue) => {setCountry(newValue)}}
+                        value={name}
+                        onChange={(_, newValue) => {setName(newValue)}}
                         disablePortal
-                        options={countries}
-                        renderInput={(params) => <TextField {...params} label="Country" variant='standard'/>}
-                        sx={{ minWidth:150}}
+                        options={players}
+                        renderInput={(params) => <TextField {...params} label="Name" variant='standard'/>}
+                        sx={{ minWidth:200}}
                     />
                 </Grid>
                 <Grid item>
@@ -97,7 +75,9 @@ export default function Ranking() {
                     <Button variant="contained" onClick={rankPlayers}>Rank</Button>
                 </Grid>
             </Grid>
-            {data && 'TODO: Display the data'}
+            <div style={{marginTop: 10}}>
+                {data && <RankingTable data={data}/>}
+            </div>
         </div>
     );
 }
