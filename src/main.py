@@ -233,7 +233,9 @@ def ls(path):
                output.append(key)
         return output
     else:
-        error(404)
+        # error(404)
+        print("Error: Path does not exist!")
+        return []
 
 
 def cat(path):
@@ -458,7 +460,8 @@ def main():
             if cmd == "mkdir":
                 mkdir(arg)
             elif cmd == "ls":
-                ls(arg)
+                result = ls(arg)
+                print(result)
             elif cmd == "cat":
                 cat(arg)
             elif cmd == "rm":
