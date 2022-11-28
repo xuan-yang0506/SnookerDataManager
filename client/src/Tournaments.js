@@ -40,18 +40,12 @@ function TournamentsTable(props) {
 
 export default function Tournaments(props) {
     const tournaments = props.tournaments;
-    const [tournament, setTournament] = React.useState('');
+    const [tournament, setTournament] = React.useState(null);
     const [year, setYear] = React.useState(null);
     const [data, setData] = React.useState(null);
 
     const searchTournaments = () => {
-        fetch('/api/searchTournaments',{
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({year: year, tournament: tournament}),
-        })
+        fetch('/api/searchTournaments?' + new URLSearchParams({year: year, tournament: tournament}))
             .then(response => {return response.json()})
             .then(data => {setData(data)})
     };

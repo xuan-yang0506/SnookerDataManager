@@ -104,7 +104,7 @@ function NavTabs() {
             <Games players={players} tournaments={tournaments}/>
           </TabPanel>
           <TabPanel value={value} index={2}>
-            <Tournaments />          
+            <Tournaments tournaments={tournaments}/>          
           </TabPanel>
           <TabPanel value={value} index={3}>
             <Ranking players={players}/>

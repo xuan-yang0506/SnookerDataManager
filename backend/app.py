@@ -240,8 +240,8 @@ def get_countries():
 def search_tournaments():
     tournament = request.args.get("tournament")
     year = request.args.get("year")
-    tournament = None if tournament == '' else tournament
-    year = None if year == '' else year
+    tournament = None if tournament == 'null' else tournament
+    year = None if year == 'null' else year
 
     def mapFuncTournament(data_address):
         url = data_address + '?orderBy="3"'
@@ -250,9 +250,7 @@ def search_tournaments():
         data = requests.get(url).json()
         output = []
         if tournament is not None:
-            for key in data.keys():
-                output.append(data[key])
-            return output
+            return list(data.values())
         else:
             return data
     def combineFunc(value, element):
@@ -280,8 +278,7 @@ def search_tournaments():
 def get_tournaments():
     '''get a list of all unique tournaments' names'''
     def mapFunc(data_address):
-        url = data_address + '?orderby="name"'
-        data = requests.get(url).json()
+        data = requests.get(data_address).json()
         data = set(map(lambda x: x[3], data))
         return data
     
