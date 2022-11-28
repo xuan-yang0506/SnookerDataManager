@@ -41,11 +41,11 @@ function NavTabs() {
   const [tournaments, setTournaments] = React.useState([]);
   const getTournaments = () => {
     fetch('/api/getTournamentsList')
-        .then(response => response.json())
-        .then(data => {
-            setTournaments(data);
-        });
-  }
+      .then(response => response.json())
+      .then(data => {
+          setTournaments(data);
+      });
+  };
 
   if (!tournaments.length) {
       getTournaments();
@@ -55,18 +55,32 @@ function NavTabs() {
   const [countries, setCountries] = React.useState([]);
   const getCountries = () => {
     fetch('/api/getCountriesList')
-        .then(response => response.json())
-        .then(data => {
-            setCountries(data);
-        });
-  }
+      .then(response => response.json())
+      .then(data => {
+          setCountries(data);
+      });
+  };
 
   if (!countries.length) {
-      getCountries();
+    getCountries();
   } 
 
+  // get players list
+  const [players, setPlayers] = React.useState([]);
+  const getPlayers = () => {
+    fetch('/api/getPlayersList')
+      .then(response => response.json())
+      .then(data => {
+        setPlayers(data);
+      });
+  };
+  
+  if (!players.length) {
+    getPlayers();
+  }
+
   const handleChange = (_, newValue) => {
-      setValue(newValue);
+    setValue(newValue);
   };
 
   return (
@@ -84,16 +98,16 @@ function NavTabs() {
       <div>
         <FormControl sx={{ m: 1, flexGrow: 1}}>
           <TabPanel value={value} index={0}> 
-            <Players countries={countries}/>                 
+            <Players players={players} countries={countries}/>                 
           </TabPanel>
           <TabPanel value={value} index={1}>
-            <Games tournaments={tournaments}/>
+            <Games players={players} tournaments={tournaments}/>
           </TabPanel>
           <TabPanel value={value} index={2}>
             <Tournaments />          
           </TabPanel>
           <TabPanel value={value} index={3}>
-            <Ranking />
+            <Ranking players={players}/>
           </TabPanel>
         </FormControl>
       </div>

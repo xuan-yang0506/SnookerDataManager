@@ -76,27 +76,27 @@ def search_players():
     name = request.args.get("name")
     country = request.args.get("country")
     name = None if name == '' else name
+    country = None if country == '' else country
     
-    if name is None and country is None:
+    if not name and not country:
         return {}
-    if name is not None:
-        name_split = name.split(" ")
-        first_name = ""
-        last_name = ""
-        if len(name_split) > 0:
-            first_name = name_split[0].lower()
-            if len(name_split) > 1:
-                last_name = name_split[1].lower()
-        def mapFunc(data):
-            output = []
-            for item in data:
-                if (first_name is None or first_name in item[2].lower()) and \
-                    (last_name is None or last_name in item[3].lower()) and \
-                    (country is None or country.lower() in item[5].lower()):
-                    output.append(item)
-            return output
+    elif not name:
+        def mapFunc(data_address):
+            url = data_address + f'?orderby="5"&equalTo="{country}"'
+            data = requests.get(url).json()
+            data = list(data.values())
+            return data
+    elif not country:
+        def mapFunc(data_address):
+            url = data_address + f'?orderBy="4"&equalTo="{name}"'
+            data = requests.get(url).json()
+            data = list(data.values())
+            return data
     else:
-        def mapFunc(data):
+        def mapFunc(data_address):
+            url = data_address + f'?orderBy="4"&equalTo="{name}"'
+            data = requests.get(url).json()
+            data = list(data.values())
             output = []
             for item in data:
                 if country.lower() in item[5].lower():
@@ -226,12 +226,29 @@ def get_tournaments():
         data = requests.get(url).json()
         data = set(map(lambda x: x[3], data))
         return data
+    
     def combineFunc(value, element):
         return value.union(element)
+    
     result = main.map_reduce("/snooker/tournaments.csv", mapFunc, combineFunc, num_partition)
     result = sorted(list(result))
     return jsonify(result)
 
+@app.route('/api/getPlayersList', methods=['GET'])
+def get_players():
+    '''get a list of all unique players' names'''
+    def mapFunc(data_address):
+        data = requests.get(data_address).json()
+        data = list(map(lambda x: x[4], data))
+        return data
+
+    def combineFunc(value, element):
+        return value + element
+    
+    result = main.map_reduce("/snooker/players_r.csv", mapFunc, combineFunc, num_partition)
+    result = sorted(result)
+    return jsonify(result)
+    
 if __name__ == '__main__':
     app.run('127.0.0.1', port=5000, debug=True)
     

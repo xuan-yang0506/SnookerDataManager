@@ -42,10 +42,12 @@ function PlayersTable(props) {
 }
 
 export default function Players(props) {
+    const players = props.players;
+    const countries = props.countries;
+
     const [name, setName] = React.useState('');
     const [country, setCountry] = React.useState('');
     const [data, setData] = React.useState(null);
-    const countries = props.countries;
 
     const searchPlayers = () => {
         fetch('/api/searchPlayers?' + new URLSearchParams({name: name, country: country}))
@@ -53,15 +55,18 @@ export default function Players(props) {
             .then(data => {setData(data)})
     };
 
-    const handleNameChange = (event) => {
-        setName(event.target.value);
-    };
-
     return (
         <div>
             <Grid container spacing={2}>
-                <Grid item>
-                    <TextField id="outlined-basic" label="Name" variant="standard" onChange={handleNameChange} />
+                <Grid item>                    
+                    <Autocomplete 
+                        value={name}
+                        onChange={(_, newValue) => {setName(newValue)}}
+                        disablePortal
+                        options={players}
+                        renderInput={(params) => <TextField {...params} label="Name" variant='standard'/>}
+                        sx={{ minWidth:200}}
+                    />
                 </Grid>
                 <Grid item>
                     <Autocomplete 
@@ -70,7 +75,7 @@ export default function Players(props) {
                         disablePortal
                         options={countries}
                         renderInput={(params) => <TextField {...params} label="Country" variant='standard'/>}
-                        sx={{ minWidth:150}}
+                        sx={{ minWidth:200}}
                     />
                 </Grid>
                 <Grid item alignItems="end" style={{ display: "flex"}}>
