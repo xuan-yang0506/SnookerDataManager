@@ -41,23 +41,11 @@ function PlayersTable(props) {
     )
 }
 
-export default function Players() {
+export default function Players(props) {
     const [name, setName] = React.useState('');
     const [country, setCountry] = React.useState('');
-    const [countries, setCountries] = React.useState([]);
     const [data, setData] = React.useState(null);
-
-    const getCountries = () => {
-        fetch('/api/getCountriesList')
-            .then(response => response.json())
-            .then(data => {
-                setCountries(data);
-            });
-    }
-
-    if (!countries.length) {
-        getCountries();
-    }
+    const countries = props.countries;
 
     const searchPlayers = () => {
         fetch('/api/searchPlayers?' + new URLSearchParams({name: name, country: country}))
