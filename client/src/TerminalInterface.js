@@ -1,5 +1,5 @@
 import React from 'react';
-import {TextField, Grid, Button, Container} from '@mui/material';
+import {TextField, Grid, Button, FormControlLabel} from '@mui/material';
 import TreeView from '@mui/lab/TreeView';
 import TreeItem from '@mui/lab/TreeItem';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -16,6 +16,7 @@ function NavigationTree(props) {
 
     return (
         <div style={{textAlign: "left"}}>
+            <label style={{fontSize: "20px"}}>EDFS Navigation Tree</label>
             <TreeView
                 defaultCollapseIcon={<ExpandMoreIcon />}
                 defaultExpandIcon={<ChevronRightIcon />}
@@ -57,6 +58,9 @@ export default function TerminalInterface() {
     return (
         <div>
             <NavigationTree data={naviData} />
+            <div style={{textAlign: "left"}}>
+                <label style={{fontSize: "20px"}}>EDFS Terminal</label>
+            </div>
             <Grid container spacing={2}>
                 <Grid item>                    
                     <TextField id="command-input" label="Command" variant="standard" sx={{minWidth: 500}}/>
