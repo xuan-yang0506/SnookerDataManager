@@ -45,8 +45,8 @@ export default function Players(props) {
     const players = props.players;
     const countries = props.countries;
 
-    const [name, setName] = React.useState('');
-    const [country, setCountry] = React.useState('');
+    const [name, setName] = React.useState(null);
+    const [country, setCountry] = React.useState(null);
     const [data, setData] = React.useState(null);
 
     const searchPlayers = () => {

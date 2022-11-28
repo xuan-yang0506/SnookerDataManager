@@ -71,14 +71,14 @@ def index():
 def search_players():
     name = request.args.get("name")
     country = request.args.get("country")
-    name = None if name == '' else name
-    country = None if country == '' else country
+    name = None if name == 'null' else name
+    country = None if country == 'null' else country
     
     if not name and not country:
         return {}
     elif not name:
         def mapFunc(data_address):
-            url = data_address + f'?orderby="5"&equalTo="{country}"'
+            url = data_address + f'?orderBy="5"&equalTo="{country}"'
             data = requests.get(url).json()
             data = list(data.values())
             return data
