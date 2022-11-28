@@ -223,13 +223,15 @@ def ls(path):
     List all directories and files under the given path
     """
     if check_path_exists(path):
+        output = []
         dir_metadata = requests.get(f'{METADATA_ROOT_URL}{path}.json').json()
         for key in dir_metadata:
             # the case when the key is a file
             if 'filename' in dir_metadata[key]:
-                print(dir_metadata[key]['filename'])
+                output.append(dir_metadata[key]['filename'])
             else:
-               print(key)
+               output.append(key)
+        return output
     else:
         error(404)
 
@@ -244,6 +246,7 @@ def cat(path):
         path = "/".join(split[:-1]) + "/" + str(filename_hash)
         file_metadata = requests.get(f'{METADATA_ROOT_URL}/{path}.json').json()
         filename = file_metadata['filename']
+        output = ""
         for block in file_metadata['blocks']:
             nodes = file_metadata['block_locations'][block]
             read_success = False
@@ -256,7 +259,7 @@ def cat(path):
                 for _ in range(3):
                     try:
                         data = requests.get(f'{node_address}/{file_id}.json').json()
-                        print(data, end='')
+                        output += data
                         read_success = True
                         break
                     except: 
@@ -265,7 +268,7 @@ def cat(path):
                     break
                 else:
                     error(1)    
-        print('')   
+        return output
     else:
         error(404)
 
@@ -382,6 +385,60 @@ def map_reduce(path, mapFunc, combineFunc, num_partitions):
 
 def usage():
     print("Usage: ")
+    
+def terminal(command):
+    arg_length = len(command)
+    if arg_length == 1:
+        if command[0] == "init":
+            init_database()
+            return "Database initialized."
+        else:
+            usage()
+    elif arg_length == 2:
+        cmd = command[0]
+        arg = command[1]
+        if cmd == "put" or cmd == "readPartition":
+            usage()
+        else:
+            if cmd == "mkdir":
+                mkdir(arg)
+                return f"Directory {arg} created."
+            elif cmd == "ls":
+                output = ls(arg)
+                msg = ""
+                for file in output:
+                    msg += file + " "
+                return msg
+            elif cmd == "cat":
+                output = cat(arg)
+                return output
+            elif cmd == "rm":
+                rm(arg)
+                return f"File {arg} deleted."
+            elif cmd == "getPartitionLocations":
+                output = get_partition_locations(arg)
+                return output
+            else:
+                usage()
+    elif arg_length == 3:
+        if command[0] == "readPartition":
+            path = command[1]
+            partition_number = command[2]
+            data = read_partition(path, partition_number)
+            return data
+        else:
+            usage()
+    elif arg_length == 4:
+        if command[0] == "put":
+            file = command[1]
+            path = command[2]
+            num_partitions = int(command[3])
+            put(file, path, num_partitions)
+            return f"Put {file} successfully into {path}"
+        else:
+            usage()
+    else:
+        usage()
 
 def main():
     arg_length = len(sys.argv)

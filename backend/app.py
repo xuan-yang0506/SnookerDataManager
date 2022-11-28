@@ -246,7 +246,32 @@ def get_players():
     result = main.map_reduce("/snooker/players_r.csv", mapFunc, combineFunc, num_partition)
     result = sorted(result)
     return jsonify(result)
+
+@app.route('/api/terminal', methods=['GET'])
+def terminal():
+    command = request.args.get("command")
+    if command == 'null':
+        return {}
+    else:
+        command = command.split(' ')
+        result = main.terminal(command)
+        return jsonify(result)
     
+@app.route('/api/getNaviData', methods=['GET'])
+def get_navi_data():
+    sample = {
+        'id': 'snooker',
+        'name': 'snooker',
+        'children': [
+            {
+                'id': 'metadata',
+                'name': 'metadata',
+            }
+        ]
+    }
+    return jsonify(sample)
+
+
 if __name__ == '__main__':
     app.run('127.0.0.1', port=5000, debug=True)
     

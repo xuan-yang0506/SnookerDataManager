@@ -6,7 +6,7 @@ import Players from './Players';
 import Games from './Games';
 import Tournaments from './Tournaments';
 import Ranking from './Ranking';
-
+import TerminalInterface from './TerminalInterface';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -88,6 +88,7 @@ function NavTabs() {
       <FormControl sx={{ m: 1, flexGrow: 1}}>
         <Box>
             <Tabs value={value} onChange={handleChange}>
+                <Tab label="EDFS" />
                 <Tab label="Players" />
                 <Tab label="Games" />
                 <Tab label="Tournaments" />
@@ -98,15 +99,18 @@ function NavTabs() {
       <div>
         <FormControl sx={{ m: 1, flexGrow: 1}}>
           <TabPanel value={value} index={0}> 
+            <TerminalInterface />                 
+          </TabPanel>
+          <TabPanel value={value} index={1}> 
             <Players players={players} countries={countries}/>                 
           </TabPanel>
-          <TabPanel value={value} index={1}>
+          <TabPanel value={value} index={2}>
             <Games players={players} tournaments={tournaments}/>
           </TabPanel>
-          <TabPanel value={value} index={2}>
+          <TabPanel value={value} index={3}>
             <Tournaments tournaments={tournaments}/>          
           </TabPanel>
-          <TabPanel value={value} index={3}>
+          <TabPanel value={value} index={4}>
             <Ranking players={players}/>
           </TabPanel>
         </FormControl>

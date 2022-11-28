@@ -1,7 +1,44 @@
 import React from 'react';
-import {FormControl, TextField, Grid, Autocomplete, Button} from '@mui/material';
+import {useMemo} from 'react';
+import {DataGrid} from '@mui/x-data-grid';
+import {TextField, Grid, Autocomplete, Button} from '@mui/material';
 
 const years = Array.from({length: 2019 - 1982 + 1}, (_, i) => String(1982 + i));
+
+function PlayersTable(props) {
+    const renderLink = (params) => {
+        return (
+            <a href={params.row.link} target="_blank">Link</a>
+        );
+    };
+
+    const columns = [
+        { field: "rank", headerName: "Rank"},
+        { field: "first_name", headerName: "First Name"},
+        { field: "last_name", headerName: "Last Name"},
+    ];
+    const data = props.data;
+
+    const rows = useMemo(() => {
+        return props.data.map((player, id) => {
+            return {
+                id: id,
+                rank: player[3],
+                first_name: player[1],
+                last_name: player[2],
+            }
+        });
+    }, [data]);
+
+    return (
+        <div style={{ height: 600, width: "100%"}}>
+            <DataGrid
+                rows={rows}
+                columns={columns}
+            />
+        </div>
+    )
+}
 
 export default function Ranking() {
     const [country, setCountry] = React.useState('');
