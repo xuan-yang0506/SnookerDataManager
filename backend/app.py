@@ -10,6 +10,58 @@ from src import main
 app = Flask(__name__)
 
 num_partition = 20
+METADATA_ROOT_URL = main.METADATA_ROOT_URL
+
+@app.route('/api/setup', methods=["GET"])
+def put_data():
+    write = request.args.get("write")
+
+    data_dir = "../data/"
+    filename_list = {'matches_r.csv', 
+                    'players_r.csv',
+                    'tournaments.csv', 
+                    'World_Rankings.csv'}
+    index_map = {}
+    index_map['matches_r.csv'] = ["0", "1", "5", "7"]
+    index_map['players_r.csv'] = ["2", "3", "4", "5"]
+    index_map['tournaments.csv'] = ["0", "2", "4"]
+    index_map['World_Rankings.csv'] = ["0", "1", "2", "3"]
+
+    if write == "1":
+        main.init_database()
+        main.mkdir("/snooker")
+        for filename in filename_list:
+            main.put(data_dir + filename, "/snooker", num_partition)
+
+    rules = {}
+    rules["rules"] = {}
+    rules["rules"][".read"] = "true"
+    rules["rules"][".write"] = "true"
+
+    for filename in filename_list:
+        url = METADATA_ROOT_URL + '/snooker' + '.json'
+        metadata = requests.get(url).json()
+        filename_hash = main.get_hash(filename)
+        cur_dur = metadata[filename_hash]
+        block_locations = cur_dur['block_locations']
+        node_to_block = {}
+        for block in block_locations.keys():
+            node_list = block_locations[block]
+            for node in node_list:
+                if node not in node_to_block.keys():
+                    node_to_block[node] = []
+                node_to_block[node].append("id_" + filename_hash + "_" + block)
+        for node in node_to_block.keys():
+            if node not in rules["rules"]:
+                rules["rules"][node] = {}
+            for block in node_to_block[node]:
+                if block not in rules["rules"][node].keys():
+                    rules["rules"][node][block] = {}    
+                rules["rules"][node][block][".indexOn"] = index_map[filename]
+
+
+
+    return jsonify(rules)
 
 @app.route('/')
 def index():
