@@ -111,7 +111,7 @@ function NavTabs() {
             <Tournaments tournaments={tournaments}/>          
           </TabPanel>
           <TabPanel value={value} index={4}>
-            <Ranking players={players}/>
+            <Ranking players={players} />
           </TabPanel>
         </FormControl>
       </div>
