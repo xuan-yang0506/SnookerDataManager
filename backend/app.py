@@ -372,17 +372,16 @@ def create_tree(json, curdir):
         split = main.split_path(curdir)
         filename = split[-1]
     else:
-        filename = "/"
+        filename = "root"
     subdir = main.ls(curdir)
-    json[curdir] = {}
-    json[curdir]["id"] = filename
-    json[curdir]["name"] = filename
-    json[curdir]["children"] = []
+    json["id"] = filename
+    json["name"] = filename
+    json["children"] = []
     for sub in subdir:
         if curdir != "/":
-            json[curdir]["children"].append(create_tree({}, curdir + "/" + sub))
+            json["children"].append(create_tree({}, curdir + "/" + sub))
         else:
-            json[curdir]["children"].append(create_tree({}, curdir + sub))
+            json["children"].append(create_tree({}, curdir + sub))
     return json
 
 @app.route('/api/getNaviData', methods=['GET'])

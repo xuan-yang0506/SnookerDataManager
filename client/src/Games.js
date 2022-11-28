@@ -53,7 +53,7 @@ export default function Games(props) {
     const searchGames = () => {
         fetch('/api/searchGames?' + new URLSearchParams({player1: player1, player2: player2, year: year, tournament: tournament}))
             .then(response => {return response.json()})
-            .then(data => {alert(data);setData(data)})
+            .then(data => {setData(data)})
     };
 
     return (
