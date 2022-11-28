@@ -233,7 +233,9 @@ def ls(path):
                output.append(key)
         return output
     else:
-        error(404)
+        # error(404)
+        print("Error: Path does not exist!")
+        return []
 
 
 def cat(path):
