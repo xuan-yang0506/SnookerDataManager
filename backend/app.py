@@ -180,7 +180,7 @@ def get_countries():
     return jsonify(result)
 
 @app.route('/api/searchTournaments', methods=['GET'])
-def gsearch_tournaments():
+def search_tournaments():
     tournament = request.args.get("tournament")
     year = request.args.get("year")
     tournament = None if tournament == '' else tournament
@@ -198,9 +198,9 @@ def gsearch_tournaments():
             return output
         else:
             return data
-    def combineFuncTournament(value, element):
+    def combineFunc(value, element):
         return value + element
-    tournamentResult = main.map_reduce("/snooker/tournaments.csv", mapFuncTournament, combineFuncTournament, num_partition)
+    tournamentResult = main.map_reduce("/snooker/tournaments.csv", mapFuncTournament, combineFunc, num_partition)
 
     def mapFuncYear(data_address):
         url = data_address + '?orderBy="2"'
@@ -214,9 +214,7 @@ def gsearch_tournaments():
             return output
         else:
             return data
-    def combineFuncYear(value, element):
-        return value + element
-    yearResult = main.map_reduce("/snooker/tournaments.csv", mapFuncYear, combineFuncYear, num_partition)
+    yearResult = main.map_reduce("/snooker/tournaments.csv", mapFuncYear, combineFunc, num_partition)
         
     result = intersection(tournamentResult, yearResult)
     return jsonify(result)
