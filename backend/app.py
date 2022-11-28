@@ -183,6 +183,9 @@ def get_countries():
 def gsearch_tournaments():
     tournament = request.args.get("tournament")
     year = request.args.get("year")
+    tournament = None if tournament == '' else tournament
+    year = None if year == '' else year
+
     def mapFuncTournament(data_address):
         url = data_address + '?orderBy="3"'
         if tournament is not None:
