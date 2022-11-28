@@ -1,6 +1,7 @@
 import React from 'react';
 import { useMemo } from 'react';
 import {TextField, Grid, Autocomplete, Button} from '@mui/material';
+import LinearProgress from '@mui/material/LinearProgress';
 import {DataGrid} from '@mui/x-data-grid';
 
 const years = Array.from({length: 2019 - 1982 + 1}, (_, i) => String(1982 + i));
@@ -16,6 +17,7 @@ function GamesTable(props) {
         { field: "frame_scores", headerName: "Frame Scores", width: 300},
     ];
     const data = props.data;
+    const loading = props.loading;
 
     const rows = useMemo(() => {
         return data.map((match, id) => {
@@ -35,6 +37,10 @@ function GamesTable(props) {
     return (
         <div style={{ height: 600, width: "100%"}}>
             <DataGrid
+                components={{
+                LoadingOverlay: LinearProgress,
+                }}
+                loading={loading}
                 rows={rows}
                 columns={columns}
             />
@@ -44,26 +50,43 @@ function GamesTable(props) {
 
 export default function Games(props) {
     const tournaments = props.tournaments;
+    const players = props.players;
     const [player1, setPlayer1] = React.useState(null);
     const [player2, setPlayer2] = React.useState(null);
     const [year, setYear] = React.useState(null);
     const [tournament, setTournament] = React.useState(null);
     const [data, setData] = React.useState(null);
+    const [loading, setLoading] = React.useState(false);
 
     const searchGames = () => {
+        setLoading(true);
         fetch('/api/searchGames?' + new URLSearchParams({player1: player1, player2: player2, year: year, tournament: tournament}))
             .then(response => {return response.json()})
-            .then(data => {setData(data)})
+            .then(data => {setData(data);setLoading(false)});
     };
 
     return (
         <div>
             <Grid container spacing={2}>
                 <Grid item>
-                    <TextField id="outlined-basic" label="Player1" variant="standard" onChange={(e) => {setPlayer1(e.target.value)}} />
+                    <Autocomplete 
+                        value={player1}
+                        onChange={(_, newValue) => {setPlayer1(newValue)}}
+                        disablePortal
+                        options={players}
+                        renderInput={(params) => <TextField {...params} label="Name" variant='standard'/>}
+                        sx={{ minWidth:200}}
+                    />
                 </Grid>
                 <Grid item>
-                    <TextField id="outlined-basic" label="Player2" variant="standard" onChange={(e) => {setPlayer2(e.target.value)}} />
+                    <Autocomplete 
+                        value={player2}
+                        onChange={(_, newValue) => {setPlayer2(newValue)}}
+                        disablePortal
+                        options={players}
+                        renderInput={(params) => <TextField {...params} label="Name" variant='standard'/>}
+                        sx={{ minWidth:200}}
+                    />
                 </Grid>
                 <Grid item>
                     <Autocomplete 
@@ -90,7 +113,7 @@ export default function Games(props) {
                 </Grid>
             </Grid>
             <div style={{marginTop: 10}}>
-                {data && <GamesTable data={data}/>}
+                {data && <GamesTable loading={loading} data={data}/>}
             </div>
         </div>
     );

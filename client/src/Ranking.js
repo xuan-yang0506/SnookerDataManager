@@ -1,6 +1,7 @@
 import React from 'react';
 import {useMemo} from 'react';
 import {DataGrid} from '@mui/x-data-grid';
+import LinearProgress from '@mui/material/LinearProgress';
 import {TextField, Grid, Autocomplete, Button} from '@mui/material';
 
 const years = Array.from({length: 2019 - 1982 + 1}, (_, i) => String(1982 + i));
@@ -13,6 +14,7 @@ function RankingTable(props) {
         { field: "year", headerName: "Year"},
     ];
     const data = props.data;
+    const loading = props.loading;
 
     const rows = useMemo(() => {
         return props.data.map((player, id) => {
@@ -31,6 +33,10 @@ function RankingTable(props) {
             <DataGrid
                 rows={rows}
                 columns={columns}
+                components={{
+                    LoadingOverlay: LinearProgress,
+                    }}
+                loading={loading}
             />
         </div>
     )
@@ -41,11 +47,13 @@ export default function Ranking(props) {
     const [name, setName] = React.useState(null);
     const [year, setYear] = React.useState(null);
     const [data, setData] = React.useState(null);
+    const [loading, setLoading] = React.useState(false);
 
     const rankPlayers = () => {
+        setLoading(true);
         fetch('/api/searchRank?' + new URLSearchParams({year: year, name: name}))
             .then(response => {return response.json()})
-            .then(data => {setData(data)})
+            .then(data => {setData(data); setLoading(false)})
     };
 
     return (
@@ -76,7 +84,7 @@ export default function Ranking(props) {
                 </Grid>
             </Grid>
             <div style={{marginTop: 10}}>
-                {data && <RankingTable data={data}/>}
+                {data && <RankingTable data={data} loading={loading}/>}
             </div>
         </div>
     );

@@ -127,11 +127,8 @@ def search_games():
         if player1_name is not None:
             url += '&equalTo"' + player1_name + '"'
         data = requests.get(url).json()
-        output = []
-        if type(data) is dict:
-            for key in data.keys():
-                output.append(data[key])
-            return output
+        if type(data) == dict:
+            return list(data.values())
         else:
             return data
 
@@ -143,11 +140,8 @@ def search_games():
         if player2_name is not None:
             url += '&equalTo"' + player2_name + '"'
         data = requests.get(url).json()
-        output = []
-        if player2_name is not None:
-            for key in data.keys():
-                output.append(data[key])
-            return output
+        if type(data) == dict:
+            return list(data.values())
         else:
             return data
 
@@ -156,11 +150,8 @@ def search_games():
         if tournament is not None:
             url += '&equalTo="' + tournament + '"'
         data = requests.get(url).json()
-        output = []
-        if tournament is not None:
-            for key in data.keys():
-                output.append(data[key])
-            return output
+        if type(data) == dict:
+            return list(data.values())
         else:
             return data
 
@@ -169,11 +160,8 @@ def search_games():
         if year is not None:
             url += '&equalTo="' + year + '"'
         data = requests.get(url).json()
-        output = []
-        if year is not None:
-            for key in data.keys():
-                output.append(data[key])
-            return output
+        if type(data) == dict:
+            return list(data.values())
         else:
             return data
 
@@ -223,7 +211,6 @@ def search_games():
                 newItem += item
                 newItem += tournamentMap[tournamentId]
                 output.append(newItem)
-        print(output)
         return jsonify(output)
 
 @app.route('/api/getCountriesList', methods=['GET'])

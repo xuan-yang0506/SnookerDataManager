@@ -1,6 +1,7 @@
 import React from 'react';
 import {useMemo} from 'react';
 import {TextField, Grid, Autocomplete, Button} from '@mui/material';
+import LinearProgress from '@mui/material/LinearProgress';
 import {DataGrid} from '@mui/x-data-grid';
 
 const years = Array.from({length: 2019 - 1982 + 1}, (_, i) => String(1982 + i));
@@ -14,6 +15,7 @@ function TournamentsTable(props) {
         { field: "prize", headerName: "Prize"},
     ];
     const data = props.data;
+    const loading = props.loading;
 
     const rows = useMemo(() => {
         return data.map((tournament, id) => {
@@ -31,6 +33,10 @@ function TournamentsTable(props) {
     return (
         <div style={{ height: 600, width: "100%"}}>
             <DataGrid
+                components={{
+                LoadingOverlay: LinearProgress,
+                }}
+                loading={loading}
                 rows={rows}
                 columns={columns}
             />
@@ -43,11 +49,13 @@ export default function Tournaments(props) {
     const [tournament, setTournament] = React.useState(null);
     const [year, setYear] = React.useState(null);
     const [data, setData] = React.useState(null);
+    const [loading, setLoading] = React.useState(false);
 
     const searchTournaments = () => {
+        setLoading(true);
         fetch('/api/searchTournaments?' + new URLSearchParams({year: year, tournament: tournament}))
             .then(response => {return response.json()})
-            .then(data => {setData(data)})
+            .then(data => {setData(data); setLoading(false)})
     };
 
     return (
@@ -76,7 +84,7 @@ export default function Tournaments(props) {
                     <Button variant="contained" onClick={searchTournaments}>Search</Button>
                 </Grid>
             </Grid>
-            {data && (<div style={{marginTop: 10}}><TournamentsTable data={data}/></div>)}
+            {data && (<div style={{marginTop: 10}}><TournamentsTable data={data} loading={loading}/></div>)}
         </div>
     );
 }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useMemo } from 'react';
+import LinearProgress from '@mui/material/LinearProgress';
 import {TextField, Grid, Autocomplete, Button} from '@mui/material';
 import {DataGrid} from '@mui/x-data-grid';
 
@@ -17,6 +18,7 @@ function PlayersTable(props) {
         { field: "link", headerName: "Link", renderCell: renderLink},
     ];
     const data = props.data;
+    const loading = props.loading;
 
 
     const rows = useMemo(() => {
@@ -34,6 +36,10 @@ function PlayersTable(props) {
     return (
         <div style={{ height: 600, width: "100%"}}>
             <DataGrid
+                components={{
+                LoadingOverlay: LinearProgress,
+                }}
+                loading={loading}
                 rows={rows}
                 columns={columns}
             />
@@ -48,11 +54,13 @@ export default function Players(props) {
     const [name, setName] = React.useState(null);
     const [country, setCountry] = React.useState(null);
     const [data, setData] = React.useState(null);
+    const [loading, setLoading] = React.useState(false);
 
     const searchPlayers = () => {
+        setLoading(true);
         fetch('/api/searchPlayers?' + new URLSearchParams({name: name, country: country}))
             .then(response => {return response.json()})
-            .then(data => {setData(data)})
+            .then(data => {setData(data); setLoading(false)})
     };
 
     return (
@@ -83,7 +91,7 @@ export default function Players(props) {
                 </Grid>
             </Grid>
             <div style={{marginTop: 10}}>
-                {data && <PlayersTable data={data} />}
+                {data && <PlayersTable data={data} loading={loading}/>}
             </div>
         </div>
     );
