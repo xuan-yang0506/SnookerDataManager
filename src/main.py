@@ -458,7 +458,8 @@ def main():
             if cmd == "mkdir":
                 mkdir(arg)
             elif cmd == "ls":
-                ls(arg)
+                result = ls(arg)
+                print(result)
             elif cmd == "cat":
                 cat(arg)
             elif cmd == "rm":
