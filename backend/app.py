@@ -341,13 +341,13 @@ def search_rank():
     elif name is not None:
         first_name, last_name = name.split(' ')
         def mapFunc(data_address):
-            url = data_address + '?orderBy="1"&equalTo="' + first_name + '"'
+            url = data_address + '?orderBy="2"&equalTo="' + last_name + '"'
             output = []
             data = requests.get(url).json()
             for item in data.values():
                 row = []
                 if len(item) >= 4 and item[0] != 'Year' and item[3].isnumeric() and item[3] != "0":
-                    if last_name != item[2]:
+                    if first_name != item[1]:
                         continue
                     row.append(item[0])
                     row.append(item[1])
