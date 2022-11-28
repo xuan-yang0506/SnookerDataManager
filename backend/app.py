@@ -114,42 +114,98 @@ def search_games():
     tournament = request.args.get("tournament")
     year = request.args.get("year")
     # format params
-    player1_name = None if player1_name == '' else player1_name
-    player2_name = None if player2_name == '' else player2_name
-    tournament = None if tournament == '' else tournament
-    year = None if year == '' else year
+    player1_name = None if player1_name == 'null' else player1_name
+    player2_name = None if player2_name == 'null' else player2_name
+    tournament = None if tournament == 'null' else tournament
+    year = None if year == 'null' else year
 
     if player1_name is None and player2_name is None and tournament is None and year is None:
         return {}
+
+    def mapFuncP1(data_address):
+        url = data_address + '?orderBy="5"'
+        if player1_name is not None:
+            url += '&equalTo"' + player1_name + '"'
+        data = requests.get(url).json()
+        output = []
+        if type(data) is dict:
+            for key in data.keys():
+                output.append(data[key])
+            return output
+        else:
+            return data
+
+    def combineFunc(value, element):
+        return value + element
+
+    def mapFuncP2(data_address):
+        url = data_address + '?orderBy="7"'
+        if player2_name is not None:
+            url += '&equalTo"' + player2_name + '"'
+        data = requests.get(url).json()
+        output = []
+        if player2_name is not None:
+            for key in data.keys():
+                output.append(data[key])
+            return output
+        else:
+            return data
+
+    def mapFuncTournament(data_address):
+        url = data_address + '?orderBy="3"'
+        if tournament is not None:
+            url += '&equalTo="' + tournament + '"'
+        data = requests.get(url).json()
+        output = []
+        if tournament is not None:
+            for key in data.keys():
+                output.append(data[key])
+            return output
+        else:
+            return data
+
+    def mapFuncYear(data_address):
+        url = data_address + '?orderBy="2"'
+        if year is not None:
+            url += '&equalTo="' + year + '"'
+        data = requests.get(url).json()
+        output = []
+        if year is not None:
+            for key in data.keys():
+                output.append(data[key])
+            return output
+        else:
+            return data
+
+    if player1_name is not None:
+        playerFilter = main.map_reduce("/snooker/matches_r.csv", mapFuncP1, combineFunc, num_partition)
+    elif player2_name is not None:
+        playerFilter = main.map_reduce("/snooker/matches_r.csv", mapFuncP2, combineFunc, num_partition)
+
+    playerFilterResult = []
+    for item in playerFilter:
+        if len(item) >= 7 and (player1_name is None or player1_name == item[5]) and \
+            (player2_name is None or player2_name == item[7]):
+            playerFilterResult.append(item)
+
+    if tournament is not None:
+        tournamentFilter = main.map_reduce("/snooker/tournaments.csv", mapFuncTournament, combineFunc, num_partition)
     else:
-        def mapFuncPlayer(data):
-            if data is None:
-                return []
-            output = []
-            for item in data:
-                if len(item) >= 8 and \
-                    (player1_name is None or player1_name.lower() in item[5].lower()) and \
-                    (player2_name is None or player2_name.lower() in item[7].lower()):
-                    output.append(item)
-            return output
-        def combineFuncPlayer(value, element):
-            return value + element
-        playerFilterResult = main.map_reduce("/snooker/matches_r.csv", mapFuncPlayer, combineFuncPlayer, num_partition)
+        tournamentFilter = main.map_reduce("/snooker/tournaments.csv", mapFuncYear, combineFunc, num_partition)
 
-        def mapFuncTournament(data):
-            if data is None:
-                return []
-            output = []
-            for item in data:
-                if len(item) >= 4 and \
-                    (year is None or year == item[2]) and \
-                    (tournament is None or tournament.lower() in item[3].lower()):
-                    output.append(item)
-            return output
-        def combineFuncTournament(value, element):
-            return value + element
-        tournamentFilterResult = main.map_reduce("/snooker/tournaments.csv", mapFuncTournament, combineFuncTournament, num_partition)
+    tournamentFilterResult = []
+    for item in tournamentFilter:
+        if (tournament is None or tournament == item[3]) and \
+            (year is None or year == item[2]):
+            tournamentFilterResult.append(item)
 
+    if playerFilterResult is None and tournamentFilterResult is None:
+        return {}
+    elif playerFilterResult is None:
+        return tournamentFilterResult
+    elif tournamentFilterResult is None:
+        return playerFilterResult
+    else:
         tournamentMap = {}
         output = []
         for item in tournamentFilterResult:
@@ -163,6 +219,7 @@ def search_games():
                 newItem += item
                 newItem += tournamentMap[tournamentId]
                 output.append(newItem)
+        print(output)
         return jsonify(output)
 
 @app.route('/api/getCountriesList', methods=['GET'])
