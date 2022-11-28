@@ -339,20 +339,28 @@ def search_rank():
     result.sort(key = lambda x: int(x[3]))
     return result
     
+def create_tree(json, curdir):
+    if curdir != "/":
+        split = main.split_path(curdir)
+        filename = split[-1]
+    else:
+        filename = "/"
+    subdir = main.ls(curdir)
+    json[curdir] = {}
+    json[curdir]["id"] = filename
+    json[curdir]["name"] = filename
+    json[curdir]["children"] = []
+    for sub in subdir:
+        if curdir != "/":
+            json[curdir]["children"].append(create_tree({}, curdir + "/" + sub))
+        else:
+            json[curdir]["children"].append(create_tree({}, curdir + sub))
+    return json
+
 @app.route('/api/getNaviData', methods=['GET'])
 def get_navi_data():
-    sample = {
-        'id': '1',
-        'name': 'snooker',
-        'children': [
-            {
-                'id': 'metadata',
-                'name': 'metadata',
-            }
-        ]
-    }
-    return jsonify(sample)
-
+    root = "/"
+    return jsonify(create_tree({}, root))
 
 if __name__ == '__main__':
     app.run('127.0.0.1', port=5000, debug=True)
