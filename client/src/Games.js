@@ -1,43 +1,50 @@
 import React from 'react';
-import {FormControl, TextField, Grid, Autocomplete, Button} from '@mui/material';
+import { useMemo } from 'react';
+import {TextField, Grid, Autocomplete, Button} from '@mui/material';
+import {DataGrid} from '@mui/x-data-grid';
+import {DataGridPro} from '@mui/x-data-grid-pro';
 
 const years = Array.from({length: 2019 - 1982 + 1}, (_, i) => String(1982 + i));
 
 function GamesTable(props) {
-    // const columns = [
-    //     { field: "first_name", headerName: "First Name"},
-    //     { field: "last_name", headerName: "Last Name"},
-    //     { field: "country", headerName: "Country"},
-    //     { field: "link", headerName: "Link", renderCell: renderLink},
-    // ];
-    // const data = props.data;
+    const columns = [
+        { field: 'year', headerName: 'Year', width:70},
+        { field: "tournament", headerName: "Tournament", width: 200},
+        { field: "player1", headerName: "Player 1", width: 120},
+        { field: "score", headerName: "Score", width: 70},
+        { field: "player2", headerName: "Player 2", width: 120},
+        { field: "frame_scores", headerName: "Frame Scores", width: 300},
+    ];
+    const data = props.data;
 
-    // const rows = useMemo(() => {
-    //     return props.data.map((player, id) => {
-    //         return {
-    //             id: id,
-    //             first_name: player[2],
-    //             last_name: player[3],
-    //             country: player[5],
-    //             link: player[0],
-    //         }
-    //     });
-    // }, [data]);
+    const rows = useMemo(() => {
+        return props.data.map((match, id) => {
+            return {
+                id: match[1],
+                year: match[15],
+                tournament: match[16],
+                player1: match[5],
+                score: match[9] + ' : ' + match[10],
+                player2: match[7],
+                frame_scores: match[11],
+            }
+        });
+    }, [data]);
 
-    // return (
-    //     <div style={{ height: 600, width: "100%"}}>
-    //         <DataGrid
-    //             rows={rows}
-    //             columns={columns}
-    //         />
-    //     </div>
-    // )
+    return (
+        <div style={{ height: 600, width: "100%"}}>
+            <DataGrid
+                rows={rows}
+                columns={columns}
+            />
+        </div>
+    )
 }
 
 export default function Games() {
     const [player1, setPlayer1] = React.useState('');
     const [player2, setPlayer2] = React.useState('');
-    const [year, setYear] = React.useState(null);
+    const [year, setYear] = React.useState('');
     const [tournaments, setTournaments] = React.useState([]);
     const [tournament, setTournament] = React.useState('');
     const [data, setData] = React.useState(null);
@@ -94,7 +101,9 @@ export default function Games() {
                     <Button variant="contained" onClick={searchGames}>Search</Button>
                 </Grid>
             </Grid>
-            {data}
+            <div style={{marginTop: 10}}>
+                {data && <GamesTable data={data}/>}
+            </div>
         </div>
     );
 }
