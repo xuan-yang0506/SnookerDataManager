@@ -342,7 +342,7 @@ def search_rank():
 @app.route('/api/getNaviData', methods=['GET'])
 def get_navi_data():
     sample = {
-        'id': 'snooker',
+        'id': '1',
         'name': 'snooker',
         'children': [
             {

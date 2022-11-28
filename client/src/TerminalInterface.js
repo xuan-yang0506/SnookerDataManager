@@ -1,5 +1,5 @@
 import React from 'react';
-import {TextField, Grid, Button} from '@mui/material';
+import {TextField, Grid, Button, Container} from '@mui/material';
 import TreeView from '@mui/lab/TreeView';
 import TreeItem from '@mui/lab/TreeItem';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -15,13 +15,15 @@ function NavigationTree(props) {
     );
 
     return (
-        <TreeView
-            defaultCollapseIcon={<ExpandMoreIcon />}
-            defaultExpandIcon={<ChevronRightIcon />}
-            sx={{ height: 240, flexGrow: 1, minWidth: 300, overflowY: 'auto' }}
-        >
-            {data && renderTree(data)}
-        </TreeView>
+        <div style={{textAlign: "left"}}>
+            <TreeView
+                defaultCollapseIcon={<ExpandMoreIcon />}
+                defaultExpandIcon={<ChevronRightIcon />}
+                sx={{ height: 250, flexGrow: 1}}
+            >
+                {data && renderTree(data)}
+            </TreeView>
+        </div>
     );
 }
 
@@ -32,8 +34,9 @@ export default function TerminalInterface() {
     const getNaviData = () => {
         fetch('/api/getNaviData')
             .then(response => response.json())
-            .then(data => { setNaviData(data) });
-        alert(naviData);
+            .then(data => { 
+                setNaviData(data); 
+            });
     };
 
     if (!naviData) {
