@@ -329,7 +329,7 @@ def put(file, path, num_partitions):
 
 
 def get_partition_locations(path):
-    print(get_partition_locations_helper(path))
+    return get_partition_locations_helper(path)
 
 
 def get_partition_locations_helper(path):
@@ -419,7 +419,7 @@ def terminal(command):
                 return f"File {arg} deleted."
             elif cmd == "getPartitionLocations":
                 output = get_partition_locations(arg)
-                return output
+                return json.dumps(output, indent=4)
             else:
                 usage()
     elif arg_length == 3:
@@ -463,11 +463,13 @@ def main():
                 result = ls(arg)
                 print(result)
             elif cmd == "cat":
-                cat(arg)
+                res = cat(arg)
+                print(res)
             elif cmd == "rm":
                 rm(arg)
             elif cmd == "getPartitionLocations":
-                get_partition_locations(arg)
+                res = get_partition_locations(arg)
+                print(res)
             else:
                 usage()
     elif arg_length == 4:
