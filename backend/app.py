@@ -183,8 +183,8 @@ def get_countries():
 def search_tournaments():
     tournament = request.args.get("tournament")
     year = request.args.get("year")
-    tournament = None if tournament == '' else tournament
-    year = None if year == '' else year
+    tournament = None if tournament == 'null' else tournament
+    year = None if year == 'null' else year
 
     def mapFuncTournament(data_address):
         url = data_address + '?orderBy="3"'
@@ -193,7 +193,6 @@ def search_tournaments():
         data = requests.get(url).json()
         output = []
         if tournament is not None:
-            print(data)
             return list(data.values())
         else:
             return data
