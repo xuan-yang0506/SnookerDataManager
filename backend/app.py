@@ -177,10 +177,14 @@ def search_games():
         else:
             return data
 
+    playerFilter = None
     if player1_name is not None:
         playerFilter = main.map_reduce("/snooker/matches_r.csv", mapFuncP1, combineFunc, num_partition)
     elif player2_name is not None:
         playerFilter = main.map_reduce("/snooker/matches_r.csv", mapFuncP2, combineFunc, num_partition)
+
+    if playerFilter is None:
+        playerFilter = main.map_reduce("/snooker/matches_r.csv", mapFuncP1, combineFunc, num_partition)
 
     playerFilterResult = []
     for item in playerFilter:
