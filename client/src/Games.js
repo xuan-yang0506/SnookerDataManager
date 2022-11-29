@@ -10,7 +10,7 @@ function GamesTable(props) {
     const columns = [
         { field: 'year', headerName: 'Year', width:70},
         { field: "tournament", headerName: "Tournament", width: 200},
-        { field: "stage", headerName: "Stage", width: 70},
+        { field: "stage", headerName: "Stage", width: 100},
         { field: "player1", headerName: "Player 1", width: 120},
         { field: "score", headerName: "Score", width: 70},
         { field: "player2", headerName: "Player 2", width: 120},

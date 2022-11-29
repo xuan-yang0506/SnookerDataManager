@@ -9,7 +9,7 @@ const years = Array.from({length: 2019 - 1982 + 1}, (_, i) => String(1982 + i));
 function TournamentsTable(props) {
     const columns = [
         { field: "year", headerName: "Year"},
-        { field: "name", headerName: "Tournament"},
+        { field: "name", headerName: "Tournament", width: 150},
         { field: "country", headerName: "Country"},
         { field: "category", headerName: "Category"},
         { field: "prize", headerName: "Prize"},

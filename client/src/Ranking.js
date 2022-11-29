@@ -20,7 +20,7 @@ function RankingTable(props) {
         return props.data.map((player, id) => {
             return {
                 id: id,
-                rank: player[3],
+                rank: Number(player[3]),
                 first_name: player[1],
                 last_name: player[2],
                 year: Number(player[0]),

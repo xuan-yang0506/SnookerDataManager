@@ -46,19 +46,14 @@ export default function TerminalInterface() {
 
     const handleSubmit = () => {
         const command = document.getElementById('command-input').value;
-
-        fetch('/api/getNaviData')
-        .then(response => response.json())
-        .then(data => { 
-            setNaviData(data); 
-    });
         
         fetch('/api/terminal?' + new URLSearchParams({command: command}))
             .then(response => {return response.json()})
-            .then(data => {setResult(data)});
-    
-        // fetch file structure again every time a command is submitted (update)
-        getNaviData();
+            .then(data => {
+                setResult(data);        
+                // fetch file structure again every time a command is submitted (update)
+                getNaviData();
+            });
     }
 
     return (
