@@ -67,10 +67,6 @@ def put_data():
 
     return jsonify(rules)
 
-@app.route('/')
-def index():
-    return 'Hello World'
-
 @app.route('/api/searchPlayers', methods=['GET'])
 def search_players():
     name = request.args.get("name")
